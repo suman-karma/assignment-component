@@ -13,6 +13,17 @@ java {
 
 repositories {
 	mavenCentral()
+	maven {
+		url "https://repo.mhe.io/artifactory/maven-mirror/"
+		credentials {
+			username = 'svc_docker_read_only'
+			password = '0xDockerReadOnly'
+		}
+		metadataSources {
+			mavenPom()
+			artifact()
+		}
+	}
 }
 
 dependencies {
@@ -29,6 +40,16 @@ dependencies {
 	implementation group: 'com.amazonaws', name: 'aws-java-sdk-sqs', version: '1.12.692'
 	// https://mvnrepository.com/artifact/com.amazonaws/aws-java-sdk-sts
 	implementation group: 'com.amazonaws', name: 'aws-java-sdk-sts', version: '1.12.692'
+	// https://mvnrepository.com/artifact/org.apache.commons/commons-lang3
+	implementation group: 'org.apache.commons', name: 'commons-lang3', version: '3.14.0'
+
+	implementation group: 'io.mhe.highered.connect.commons', name: 'amazons3-client', version:'4.16.3064-H-SNAPSHOT'
+	implementation (group: 'io.mhe.highered.connect.commons', name: 'amazon-sqs-client', version:'4.16.3064-H-SNAPSHOT') {
+		exclude group: "com.google.code.gson", module: "gson"
+		exclude group: "com.fasterxml.jackson.core"
+		exclude group: "commons-lang", module: "commons-lang"
+		exclude group: "commons-codec", module: "commons-codec"
+	}
 }
 
 tasks.named('test') {
