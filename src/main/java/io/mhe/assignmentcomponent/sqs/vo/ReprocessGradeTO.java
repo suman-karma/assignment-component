@@ -7,59 +7,59 @@ import java.util.List;
 
 public class ReprocessGradeTO implements Event {
 
-	private ContentTO originalMessage;
-	private String errorCode;
-	private List<String> failedConnectUserIds;
-	private List<String> failedUserXids;
-	private String originalException;
-	private String eventType;
-	private String traceId;
-	
-	public ContentTO getOriginalMessage() {
+private ContentTO originalMessage;
+private String errorCode;
+private List<String> failedConnectUserIds;
+private List<String> failedUserXids;
+private String originalException;
+private String eventType;
+private String traceId;
+
+public ContentTO getOriginalMessage() {
 		return originalMessage;
-	}
-	public void setOriginalMessage(ContentTO originalMessage) {
+}
+public void setOriginalMessage(ContentTO originalMessage) {
 		this.originalMessage = originalMessage;
-	}
-	public String getErrorCode() {
+}
+public String getErrorCode() {
 		return errorCode;
-	}
-	public void setErrorCode(String errorCode) {
+}
+public void setErrorCode(String errorCode) {
 		this.errorCode = errorCode;
-	}
-	public List<String> getFailedConnectUserIds() {
+}
+public List<String> getFailedConnectUserIds() {
 		return failedConnectUserIds;
-	}
-	public void setFailedConnectUserIds(List<String> failedConnectUserIds) {
+}
+public void setFailedConnectUserIds(List<String> failedConnectUserIds) {
 		this.failedConnectUserIds = failedConnectUserIds;
-	}
-	public List<String> getFailedUserXids() {
+}
+public List<String> getFailedUserXids() {
 		return failedUserXids;
-	}
-	public void setFailedUserXids(List<String> failedUserXids) {
+}
+public void setFailedUserXids(List<String> failedUserXids) {
 		this.failedUserXids = failedUserXids;
-	}
-	public String getOriginalException() {
+}
+public String getOriginalException() {
 		return originalException;
-	}
-	public void setOriginalException(String originalException) {
+}
+public void setOriginalException(String originalException) {
 		this.originalException = originalException;
-	}
-	
-	public String getTraceId() {
+}
+
+public String getTraceId() {
 		return traceId;
-	}
-	public void setTraceId(String traceId) {
+}
+public void setTraceId(String traceId) {
 		this.traceId = traceId;
-	}
-	@Override
-	public String getEventType() {
+}
+@Override
+public String getEventType() {
 		return eventType;
-	}
-	
-	@Override
-	public String toString()
-	{
+}
+
+@Override
+public String toString()
+{
 		return ToStringBuilder.reflectionToString(this);
-	}
+}
 }

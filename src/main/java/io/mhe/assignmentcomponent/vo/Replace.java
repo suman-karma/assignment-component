@@ -24,7 +24,7 @@ public class Replace {
      * @return  the String that has been replaced
      */
     public static String replace(String input, String find, String replace) {
-    	String what = input;
+    String what = input;
         String output = "";
         int ind;
 

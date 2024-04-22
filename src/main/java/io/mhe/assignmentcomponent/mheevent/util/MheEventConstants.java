@@ -1,7 +1,7 @@
 package io.mhe.assignmentcomponent.mheevent.util;
 
 public class MheEventConstants {
-	
+
     public static final String CARDIO_SQS_REGION = "CARDIO_SQS_REGION";
     public static final String CARDIO_COMPRESS_ABOVE_LIMIT = "CARDIO_COMPRESS_ABOVE_LIMIT";
     public static final String CARDIO_SWITCH_ON = "CARDIO_SWITCH_ON";
@@ -28,9 +28,9 @@ public class MheEventConstants {
     public static final String ASSIGNMENT_TYPE = "assignment_type";
     public static final Integer SUBLIST_SIZE = 75;
     public static final String GRADE_SQS_ENDPOINT = "GRADE_SQS_ENDPOINT";
-    public static final String GRADE_SQS_ENDPOINT_DEFAULT = "--SOME---QUEUE---";	
-	
-	public enum MheEvent {
+    public static final String GRADE_SQS_ENDPOINT_DEFAULT = "--SOME---QUEUE---";
+
+public enum MheEvent {
 		//value is SQS Key and using this key SQS URL is retrieved using Configuration.java
 		ASSIGNMENT(MHE_EVENT_SQS_KEY),
 		SCORE(MHE_EVENT_GRADE_SCORE_SQS_KEY),
@@ -49,9 +49,9 @@ public class MheEventConstants {
 			return value;
 		}
 
-	}
+}
     
-	public enum MheEventAction {
+public enum MheEventAction {
 		CREATED("created"), UPDATED("updated"), DELETED("deleted"), NO_ACTION("NoAction"), UPSERT("upsert"),
 		RESTORED("restored");
 
@@ -64,6 +64,6 @@ public class MheEventConstants {
 		public String toString() {
 			return value;
 		}
-	}
-	
+}
+
 }

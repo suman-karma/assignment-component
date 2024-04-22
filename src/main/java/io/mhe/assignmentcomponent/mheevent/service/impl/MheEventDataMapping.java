@@ -18,16 +18,16 @@ import java.util.stream.Collectors;
 
 public abstract class MheEventDataMapping implements IMheEventService {
 
-	Logger logger = LoggerFactory.getLogger(MheEventDataMapping.class);
-	
-	@Autowired
-	private IAmazonSQSMheEventHelper amazonSQSMheEventHelper;
+Logger logger = LoggerFactory.getLogger(MheEventDataMapping.class);
 
-	abstract List<MheEventTO> mapData(MheEventData data);
+@Autowired
+private IAmazonSQSMheEventHelper amazonSQSMheEventHelper;
 
-	@Override
-	//@Async("mheExecutor")
-	public void sendMheEventToSQS(MheEventData data) {
+abstract List<MheEventTO> mapData(MheEventData data);
+
+@Override
+//@Async("mheExecutor")
+public void sendMheEventToSQS(MheEventData data) {
 		logger.debug("sendMheEventToSQS : {}",data);
 		try {
 			List<MheEventTO> mheEventTOList = mapData(data);
@@ -38,9 +38,9 @@ public abstract class MheEventDataMapping implements IMheEventService {
 		} catch (Exception e) {
 			MheEventExceptionUtils.logException(data, e);
 		}
-	}
+}
 
-	protected void writeToSQS(List<MheEventTO> mheEventTOList) {
+protected void writeToSQS(List<MheEventTO> mheEventTOList) {
 		logger.debug("Inside writeToSQS {}",mheEventTOList);
 		if (null != mheEventTOList && !mheEventTOList.isEmpty()) {
 			mheEventTOList.stream()
@@ -49,9 +49,9 @@ public abstract class MheEventDataMapping implements IMheEventService {
 						amazonSQSMheEventHelper.writeToSQS(mheEventTO);
 					});
 		}
-	}
+}
 
-	private void prepareMheEventTOList(List<MheEventTO> mheEventTOList) {
+private void prepareMheEventTOList(List<MheEventTO> mheEventTOList) {
 		logger.debug("Partitioning mheEventTOList {}",mheEventTOList);
 		//Partition Logic 
 		List<MheEventTO> mheEventTOs = new ArrayList<>();
@@ -76,6 +76,6 @@ public abstract class MheEventDataMapping implements IMheEventService {
 		mheEventTOList.clear();
 		mheEventTOList.addAll(mheEventTOs);
 		logger.debug("Partitioned mheEventToList to {} ",mheEventTOList.size());
-	}
-	
+}
+
 }

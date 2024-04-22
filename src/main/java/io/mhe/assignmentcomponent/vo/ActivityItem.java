@@ -119,47 +119,47 @@ public class ActivityItem implements Model {
     //addedd for ExtraEZTInfo
     private Map<String, String> extraEZTInfoMap = new HashMap<String, String>(); 
 
-	private static final int QUESTION_TITLE_COL_SIZE = 1024;
+private static final int QUESTION_TITLE_COL_SIZE = 1024;
     private static final float MAX_POINT_LIMIT =2000.00f;
     
     private boolean manualGradingRequired;   
 
     public boolean isManualGradingRequired() {
 		return manualGradingRequired;
-	}
+}
 
-	public void setManualGradingRequired(boolean manualGradingRequired) {
+public void setManualGradingRequired(boolean manualGradingRequired) {
 		this.manualGradingRequired = manualGradingRequired;
-	}
+}
 
     public String getTitle() {
 		return title;
-	}
+}
 
-	public static float getMaxPointLimit() {
+public static float getMaxPointLimit() {
 		return MAX_POINT_LIMIT;
-	}
-	
-	public void setTitle(String title) {
+}
+
+public void setTitle(String title) {
 		// Chopping the title for EZTest Questions.
 		if(title != null && title.length() > QUESTION_TITLE_COL_SIZE) {
-		    	String str = title.substring(0, QUESTION_TITLE_COL_SIZE);
+		    String str = title.substring(0, QUESTION_TITLE_COL_SIZE);
 			title = str;
 		}
 		
 		this.title = title;
-	}
+}
 
-	public String getRenderingUrl() {
+public String getRenderingUrl() {
 		return renderingUrl;
-	}
+}
 
-	public void setRenderingUrl(String renderingUrl) {
+public void setRenderingUrl(String renderingUrl) {
 		this.renderingUrl = renderingUrl;
-	}
+}
 
-	private String title = null;
-	private String renderingUrl = null;
+private String title = null;
+private String renderingUrl = null;
     
     public String getNativeAlaId() {
         return nativeAlaId;
@@ -221,33 +221,33 @@ public class ActivityItem implements Model {
     }
    
 
-	public long[] getSkillCategoryIds() {
+public long[] getSkillCategoryIds() {
 		return skillCategoryIds;
-	}
+}
 
-	public void setSkillCategoryIds(long[] skillCategoryIds) {
+public void setSkillCategoryIds(long[] skillCategoryIds) {
 		this.skillCategoryIds = skillCategoryIds;
-	}
+}
 
-	/**
-	 * @return the activityId
-	 */
-	public long getActivityId() {
+/**
+ * @return the activityId
+ */
+public long getActivityId() {
 		return activityId;
-	}
+}
 
-	/**
-	 * @param activityId the activityId to set
-	 */
-	public void setActivityId(long activityId) {
+/**
+ * @param activityId the activityId to set
+ */
+public void setActivityId(long activityId) {
 		this.activityId = activityId;
-	}
+}
     
     public Map<String, String> getExtraEZTInfoMap() {
 		return extraEZTInfoMap;
-	}
+}
 
-	public void setExtraEZTInfoMap(Map<String, String> extraEZTInfoMap) {
+public void setExtraEZTInfoMap(Map<String, String> extraEZTInfoMap) {
 		this.extraEZTInfoMap = extraEZTInfoMap;
-	}
+}
 }

@@ -6,7 +6,7 @@ import java.util.List;
 
 public class AssignmentAttemptScoreMheEventData extends MheEventData {
 
-	private List<MheEventDataTO> MheEventDataTOList;
+private List<MheEventDataTO> MheEventDataTOList;
     private MheEventOperation operation;
 
     public AssignmentAttemptScoreMheEventData(List<MheEventDataTO> MheEventDataTOList, MheEventOperation operation, TrackbackUrlTO trackbackUrl, MheEventAction mheEventAction) {
@@ -100,7 +100,7 @@ public class AssignmentAttemptScoreMheEventData extends MheEventData {
         return result;
     }
 
-	public String toString() {
+public String toString() {
 		StringBuilder returnStr = new StringBuilder("AssignmentAttemptScoreMheEventData(MheEventDataTOList=");
 		if (this.MheEventDataTOList != null && this.MheEventDataTOList.size() > 0) {
 			this.MheEventDataTOList.forEach(returnStr::append);
@@ -108,7 +108,7 @@ public class AssignmentAttemptScoreMheEventData extends MheEventData {
 		returnStr.append(", operation=" + this.operation + ", trackbackUrl=" + this.trackbackUrl + ", mheEventAction="
 				+ this.mheEventAction + ")");
 		return returnStr.toString();
-	}
+}
 
     public static class AssignmentAttemptScoreMheEventDataBuilder {
         private List<MheEventDataTO> mheEventDataTOList;

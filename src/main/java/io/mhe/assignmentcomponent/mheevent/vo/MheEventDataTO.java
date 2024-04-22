@@ -4,19 +4,19 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class MheEventDataTO {
-	private Object sectionId;
-	private Object assignmentId;
-	private Object assignmentType;
-	private Object studentId;
-	private Object attemptNo;
-	private Object activityId;
-	private Object sectionLineItemActivityId;
-	private Boolean isForcedScore;
-	private Boolean isForcedZero;
+private Object sectionId;
+private Object assignmentId;
+private Object assignmentType;
+private Object studentId;
+private Object attemptNo;
+private Object activityId;
+private Object sectionLineItemActivityId;
+private Boolean isForcedScore;
+private Boolean isForcedZero;
 
 
-	
-	public static class MheEventDataTOBuilder {
+
+public static class MheEventDataTOBuilder {
 		
 		private Object sectionId;
 		private Object assignmentId;
@@ -101,100 +101,100 @@ public class MheEventDataTO {
 		public String toString() {
 			return "MheEventDataTOBuilder(sectionId=" + this.sectionId + ", assignmentId=" + this.assignmentId + ", assignmentType=" + this.assignmentType + ", studentId=" + this.studentId + ", attemptNo=" + this.attemptNo + ", activityId=" + this.activityId + ", sectionLineItemActivityId=" + this.sectionLineItemActivityId + ", isForcedScore=" + this.isForcedScore + ")";
 		}
-	}
+}
 
-	
-	public static MheEventDataTOBuilder builder() {
+
+public static MheEventDataTOBuilder builder() {
 		return new MheEventDataTOBuilder();
-	}
+}
 
-	
-	public Object getSectionId() {
+
+public Object getSectionId() {
 		return this.sectionId;
-	}
+}
 
-	
-	public Object getAssignmentId() {
+
+public Object getAssignmentId() {
 		return this.assignmentId;
-	}
+}
 
-	
-	public Object getAssignmentType() {
+
+public Object getAssignmentType() {
 		return this.assignmentType;
-	}
+}
 
-	
-	public Object getStudentId() {
+
+public Object getStudentId() {
 		return this.studentId;
-	}
+}
 
-	
-	public Object getAttemptNo() {
+
+public Object getAttemptNo() {
 		return this.attemptNo;
-	}
+}
 
-	
-	public Object getActivityId() {
+
+public Object getActivityId() {
 		return this.activityId;
-	}
+}
 
-	
-	public Object getSectionLineItemActivityId() {
+
+public Object getSectionLineItemActivityId() {
 		return this.sectionLineItemActivityId;
-	}
+}
 
-	public Boolean getIsForcedScore() {
+public Boolean getIsForcedScore() {
 		return this.isForcedScore;
-	}
-	public Boolean getIsForcedZero() {
+}
+public Boolean getIsForcedZero() {
 		return this.isForcedZero;
-	}
+}
 
 
-	
-	public void setSectionId(final Object sectionId) {
+
+public void setSectionId(final Object sectionId) {
 		this.sectionId = sectionId;
-	}
+}
 
-	
-	public void setAssignmentId(final Object assignmentId) {
+
+public void setAssignmentId(final Object assignmentId) {
 		this.assignmentId = assignmentId;
-	}
+}
 
-	
-	public void setAssignmentType(final Object assignmentType) {
+
+public void setAssignmentType(final Object assignmentType) {
 		this.assignmentType = assignmentType;
-	}
+}
 
-	
-	public void setStudentId(final Object studentId) {
+
+public void setStudentId(final Object studentId) {
 		this.studentId = studentId;
-	}
+}
 
-	
-	public void setAttemptNo(final Object attemptNo) {
+
+public void setAttemptNo(final Object attemptNo) {
 		this.attemptNo = attemptNo;
-	}
+}
 
-	
-	public void setActivityId(final Object activityId) {
+
+public void setActivityId(final Object activityId) {
 		this.activityId = activityId;
-	}
+}
 
-	
-	public void setSectionLineItemActivityId(final Object sectionLineItemActivityId) {
+
+public void setSectionLineItemActivityId(final Object sectionLineItemActivityId) {
 		this.sectionLineItemActivityId = sectionLineItemActivityId;
-	}
+}
 
-	public void setIsForcedScore(final Boolean isForcedScore) {
+public void setIsForcedScore(final Boolean isForcedScore) {
 		this.isForcedScore = isForcedScore;
-	}
+}
 
-	public void setIsForcedZero(final Boolean isForcedZero){this.isForcedZero = isForcedZero;}
+public void setIsForcedZero(final Boolean isForcedZero){this.isForcedZero = isForcedZero;}
 
-	@Override
-	
-	public boolean equals(final Object o) {
+@Override
+
+public boolean equals(final Object o) {
 		if (o == this) return true;
 		if (!(o instanceof MheEventDataTO)) return false;
 		final MheEventDataTO other = (MheEventDataTO) o;
@@ -227,16 +227,16 @@ public class MheEventDataTO {
 		final Boolean other$isForcedZero = other.getIsForcedZero();
 		if (this$isForcedZero == null ? other$isForcedZero != null : !this$isForcedZero.equals(other$isForcedZero)) return false;
 		return true;
-	}
+}
 
-	
-	protected boolean canEqual(final Object other) {
+
+protected boolean canEqual(final Object other) {
 		return other instanceof MheEventDataTO;
-	}
+}
 
-	@Override
-	
-	public int hashCode() {
+@Override
+
+public int hashCode() {
 		final int PRIME = 59;
 		int result = 1;
 		final Object $sectionId = this.getSectionId();
@@ -258,16 +258,16 @@ public class MheEventDataTO {
 		final Boolean $isForcedZero = this.getIsForcedZero();
 		result = result * PRIME + ($isForcedZero== null ? 43 : $isForcedZero.hashCode());
 		return result;
-	}
+}
 
-	@Override
-	
-	public String toString() {
+@Override
+
+public String toString() {
 		return "MheEventDataTO(sectionId=" + this.getSectionId() + ", assignmentId=" + this.getAssignmentId() + ", assignmentType=" + this.getAssignmentType() + ", studentId=" + this.getStudentId() + ", attemptNo=" + this.getAttemptNo() + ", activityId=" + this.getActivityId() + ", sectionLineItemActivityId=" + this.getSectionLineItemActivityId() + ", isForcedScore=" + this.getIsForcedScore() + ",isForcedZero="+this.getIsForcedZero()+")";
-	}
+}
 
-	
-	public MheEventDataTO(final Object sectionId, final Object assignmentId, final Object assignmentType, final Object studentId, final Object attemptNo, final Object activityId, final Object sectionLineItemActivityId, final Boolean isForcedScore,final Boolean isForcedZero) {
+
+public MheEventDataTO(final Object sectionId, final Object assignmentId, final Object assignmentType, final Object studentId, final Object attemptNo, final Object activityId, final Object sectionLineItemActivityId, final Boolean isForcedScore,final Boolean isForcedZero) {
 		this.sectionId = sectionId;
 		this.assignmentId = assignmentId;
 		this.assignmentType = assignmentType;
@@ -277,9 +277,9 @@ public class MheEventDataTO {
 		this.sectionLineItemActivityId = sectionLineItemActivityId;
 		this.isForcedScore = isForcedScore;
 		this.isForcedZero = isForcedZero;
-	}
+}
 
-	
-	public MheEventDataTO() {
-	}
+
+public MheEventDataTO() {
+}
 }

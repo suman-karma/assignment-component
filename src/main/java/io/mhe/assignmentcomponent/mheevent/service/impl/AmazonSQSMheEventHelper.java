@@ -24,7 +24,7 @@ public class AmazonSQSMheEventHelper implements IAmazonSQSMheEventHelper {
     private static Logger logger = LoggerFactory.getLogger(AmazonSQSMheEventHelper.class);
 
     private boolean initialized = false;
-    //	private int COMPRESSION_ABOVE = 0;
+    //private int COMPRESSION_ABOVE = 0;
     private AmazonSQS sqs = null;
     private int delayInSeconds = 0;
 

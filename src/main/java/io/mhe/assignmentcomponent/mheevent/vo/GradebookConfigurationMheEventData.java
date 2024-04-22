@@ -4,7 +4,7 @@ import io.mhe.assignmentcomponent.mheevent.util.MheEventConstants.MheEventAction
 
 public class GradebookConfigurationMheEventData extends MheEventData {
 
-	private Object sectionId;
+private Object sectionId;
 
     public GradebookConfigurationMheEventData(Object sectionId, TrackbackUrlTO trackbackUrl, MheEventAction mheEventAction) {
         this.sectionId = sectionId;

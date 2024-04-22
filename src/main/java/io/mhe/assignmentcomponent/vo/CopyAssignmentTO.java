@@ -10,5 +10,5 @@ public record CopyAssignmentTO(long assignmentId, long newAssignmentId, String n
                                String parentAssignmentStatus) implements Model {
 
 // weight = 0.0f;  assignmetnLineItemIds = new ArrayList<Long>();
-	
+
 }

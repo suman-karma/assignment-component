@@ -1,7 +1,7 @@
 package io.mhe.assignmentcomponent.mheevent.sqs.util;
 
 public class AmazonSQSConstants {
-	
+
     public static final String CARDIO_SQS_REGION = "CARDIO_SQS_REGION";
     public static final String CARDIO_COMPRESS_ABOVE_LIMIT = "CARDIO_COMPRESS_ABOVE_LIMIT";
     public static final String CARDIO_SQS_SUBMISSION_QUEUE_URL = "CARDIO_SQS_SUBMISSION_QUEUE_URL";
@@ -31,8 +31,8 @@ public class AmazonSQSConstants {
     public static final String DIRECTORY_DELIMITER = "/";
     
     
-	
-	enum TRANSACTION_TYPE {
+
+enum TRANSACTION_TYPE {
 		submission(CARDIO_SQS_SUBMISSION_QUEUE_URL), manualGrading(CARDIO_SQS_MANUAL_GRADING_QUEUE_URL), 
 		adjustCredit(CARDIO_SQS_ADJUST_CREDIT_QUEUE_URL), skillCategory(CARDIO_SQS_SKILL_CATEGORY_QUEUE_URL),
 		ltiaevents(CONNECT_SQS_LTIA_EVENTS_QUEUE_URL);
@@ -46,7 +46,7 @@ public class AmazonSQSConstants {
 		public String getTransactionType() {
 			return transactionType;
 		}
-	}
+}
 
     // Added for private bucket and cloudfront changes
     public static final String AMAZON_PRIVATE_BUCKET_NAME = "amazonPrivateBucketName";

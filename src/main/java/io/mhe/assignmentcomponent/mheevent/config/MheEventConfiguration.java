@@ -12,10 +12,10 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
 @Configuration
 public class MheEventConfiguration {
-	private Logger logger = LoggerFactory.getLogger(MheEventConfiguration.class);
-	
-	  @Bean(name = "mheEventExecutor") 
-	  public TaskExecutor getThreadPoolTaskExecutor() { 
+private Logger logger = LoggerFactory.getLogger(MheEventConfiguration.class);
+
+  @Bean(name = "mheEventExecutor") 
+  public TaskExecutor getThreadPoolTaskExecutor() { 
 		  ThreadPoolTaskExecutor taskExecutor = new ThreadPoolTaskExecutor(); 
 		  taskExecutor.setThreadNamePrefix("MheEvent - "); 
 		  //Set for testing, will decide the actual values after analysis
@@ -26,6 +26,6 @@ public class MheEventConfiguration {
 			}
 			taskExecutor.setMaxPoolSize(Integer.parseInt(poolSize));
 		  return taskExecutor; 
-	  }
+  }
 
 }

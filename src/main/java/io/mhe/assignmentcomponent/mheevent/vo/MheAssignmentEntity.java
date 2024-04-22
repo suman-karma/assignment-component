@@ -2,41 +2,41 @@ package io.mhe.assignmentcomponent.mheevent.vo;
 
 public class MheAssignmentEntity {
 
-	private String status;
-	private String wasPublished;
-	private String assignmentType;
+private String status;
+private String wasPublished;
+private String assignmentType;
 
-	public String getStatus() {
+public String getStatus() {
 		return status;
-	}
+}
 
-	public void setStatus(String status) {
+public void setStatus(String status) {
 		this.status = status;
-	}
+}
 
-	public String getWasPublished() {
+public String getWasPublished() {
 		return wasPublished;
-	}
+}
 
-	public void setWasPublished(String wasPublished) {
+public void setWasPublished(String wasPublished) {
 		this.wasPublished = wasPublished;
-	}
+}
 
-	public String getAssignmentType() {
+public String getAssignmentType() {
 		return assignmentType;
-	}
+}
 
-	public void setAssignmentType(String assignmentType) {
+public void setAssignmentType(String assignmentType) {
 		this.assignmentType = assignmentType;
-	}
+}
 
-	private String isLibraryAssignment;
+private String isLibraryAssignment;
 
-	public String getIsLibraryAssignment() {
+public String getIsLibraryAssignment() {
 		return isLibraryAssignment;
-	}
+}
 
-	public void setIsLibraryAssignment(String isLibraryAssignment) {
+public void setIsLibraryAssignment(String isLibraryAssignment) {
 		this.isLibraryAssignment = isLibraryAssignment;
-	}
+}
 }

@@ -15,8 +15,8 @@ import java.util.stream.Collectors;
 
 @Service("assignmentAttemptScoreMheEventDataMapping")
 public class AssignmentAttemptScoreMheEventDataMapping extends MheEventDataMapping {
-	@Override
-	public List<MheEventTO> mapData(MheEventData mheEventData) {
+@Override
+public List<MheEventTO> mapData(MheEventData mheEventData) {
 		List<MheEventTO> mheEventTOList = new ArrayList<MheEventTO>();
 		try {
 			if (mheEventData instanceof AssignmentAttemptScoreMheEventData) {
@@ -70,9 +70,9 @@ public class AssignmentAttemptScoreMheEventDataMapping extends MheEventDataMappi
 
 		return mheEventTOList;
 
-	}
+}
 
-	private boolean validate(AssignmentAttemptScoreMheEventData attemptEventData) {
+private boolean validate(AssignmentAttemptScoreMheEventData attemptEventData) {
 		if (attemptEventData == null || attemptEventData.getMheEventDataTOList() == null || attemptEventData.getMheEventDataTOList().isEmpty()
 				|| attemptEventData.getOperation() == null || attemptEventData.getMheEventAction() == null
 				|| attemptEventData.getTrackbackUrl() == null) {
@@ -84,5 +84,5 @@ public class AssignmentAttemptScoreMheEventDataMapping extends MheEventDataMappi
 				.filter(e -> e!=null)
 				.collect(Collectors.toList()));
 		return true;
-	}
+}
 }
