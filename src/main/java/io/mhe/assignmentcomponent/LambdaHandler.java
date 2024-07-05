@@ -12,7 +12,7 @@ public class LambdaHandler implements RequestHandler<Map<String,String>, Void>{
     public Void handleRequest(Map<String, String> event, Context context) {
         LambdaLogger logger = context.getLogger();
         logger.log("EVENT TYPE: " + event.getClass());
-        logger.log("This is the lambda to copy all assignemnts in a section... ");
+        logger.log("This is the lambda to copy assignemnts in a section... ");
 
 
 

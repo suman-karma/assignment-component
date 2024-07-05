@@ -18,11 +18,11 @@ import java.util.List;
  * @author Kameshwar $Author$
  */
 public class Activity implements Model {
-private static final longserialVersionUID			= -2582181326899433424L;
-public static final StringREPEATABLE_TYPE_UNLIMIT		= "UNLIMIT";
-public static final StringREPEATABLE_TYPE_MAX_ATTEMPT= "MAX_ATTEMPT";
-public static final StringREPEATABLE_TYPE_MIN_SCORE= "MIN_SCORE";
-public static final floatMAX_POINT_LIMIT				= 2000.00f;
+private static final long serialVersionUID  = -2582181326899433424L;
+public static final String REPEATABLE_TYPE_UNLIMIT		= "UNLIMIT";
+public static final String REPEATABLE_TYPE_MAX_ATTEMPT= "MAX_ATTEMPT";
+public static final String REPEATABLE_TYPE_MIN_SCORE= "MIN_SCORE";
+public static final float MAX_POINT_LIMIT				= 2000.00f;
 
 private long				id							= 0L;
 private String				title						= "";
@@ -254,13 +254,43 @@ public void setActivityItems(ActivityItem[] activityItems) {
 		}
 }
 
-public void setActivityItems(List<ActivityItem> activityItems) {
+	@Override
+	public String toString() {
+		return "Activity{" +
+				"id=" + id +
+				", title='" + title + '\'' +
+				", weight=" + weight +
+				", assignmentID=" + assignmentID +
+				", beginNote='" + beginNote + '\'' +
+				", endNote='" + endNote + '\'' +
+				", weightBased=" + weightBased +
+				", maxScore=" + maxScore +
+				", sequenceNo=" + sequenceNo +
+				", updatedDate=" + updatedDate +
+				", createdDate=" + createdDate +
+				", alaManagerID=" + alaManagerID +
+				", repeatable=" + repeatable +
+				", type='" + type + '\'' +
+				", repeatableType='" + repeatableType + '\'' +
+				", repeatableValue=" + repeatableValue +
+				", timable=" + timable +
+				", timeAllocatedInSeconds=" + timeAllocatedInSeconds +
+				", printable=" + printable +
+				", questions=" + questions +
+				", availableQuestions=" + availableQuestions +
+				", nativeAlaId='" + nativeAlaId + '\'' +
+				", alaContentProvider='" + alaContentProvider + '\'' +
+				", itemList=" + itemList +
+				'}';
+	}
+
+	public void setActivityItems(List<ActivityItem> activityItems) {
 		this.itemList = activityItems;
 }
 
-@Override
+/*@Override
 public String toString() {
-		//xxx return ReflectionToStringBuilder.toString(this);
-		return ""; //xxx
-}
+		return ReflectionToStringBuilder.toString(this);
+}*/
+
 }

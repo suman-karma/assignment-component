@@ -32,7 +32,7 @@ public class EztAssignmentCopyService extends AssignmentCopyService{
                                             HashMap modulesMap,
                                             Map assignMap) throws Exception {
         try {
-
+            logger.error("####################### in copyAssignmentsToNewSection");
             this.copyHMPublicAssignments(new CopyAssignmentTO[] { srcAssignment }, oldSectionID, newSectionID,
                     origCategoryIds, newCategoryIds, newCourseId, newSectionId);
 
@@ -79,11 +79,14 @@ public class EztAssignmentCopyService extends AssignmentCopyService{
             // ezt
             iIntegrationRestService.pullRegistrationMultiple( new AssignmentTO(srcAssignment.assignmentId(),srcAssignment.nativeAlaId()));
 
-
+            logger.error("####################### in copyAssignmentsToNewSection end");
         } catch (Exception e) {
             assignmentCopyDAO.deleteMultipleAssignments(Arrays.asList(srcAssignment.newAssignmentId()));
             throw e;
         }
     }
+
+
+
 
 }

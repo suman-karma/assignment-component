@@ -11,6 +11,15 @@ import java.util.Map;
 @Service
 public interface IAssignmentCopyService {
 
+    public void copyAssignment(CopyAssignmentTO srcAssignment, long oldSectionID,
+                               long newSectionID,
+                               long[] origCategoryIds,
+                               long[] newCategoryIds,
+                               long newCourseId,
+                               long newSectionId,
+                               HashMap modulesMap,
+                               Map assignMap) throws Exception ;
+
     public void copyAssignmentsToNewSection(CopyAssignmentTO srcAssignment, long oldSectionID,
                                             long newSectionID,
                                             long[] origCategoryIds,

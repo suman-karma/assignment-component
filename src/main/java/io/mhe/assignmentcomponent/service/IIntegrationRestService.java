@@ -11,4 +11,6 @@ public interface IIntegrationRestService {
 
     public String pullRegistrationMultiple(AssignmentTO assignmentTO) throws Exception;
 
+    public String testRest() throws Exception;
+
 }

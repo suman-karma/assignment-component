@@ -30,6 +30,19 @@ public class AssignmentCopyService  implements IAssignmentCopyService{
     private AmazonSQSHelper amazonSQSHelper;
 
 
+    @Override
+    public void copyAssignment(CopyAssignmentTO srcAssignment, long oldSectionID, long newSectionID, long[] origCategoryIds, long[] newCategoryIds, long newCourseId, long newSectionId, HashMap modulesMap, Map assignMap) throws Exception {
+        logger.error("*************** copyAssignment ");
+        this.copyAssignmentsToNewSection(srcAssignment,  oldSectionID,
+                newSectionID,
+                origCategoryIds,
+                newCategoryIds,
+                newCourseId,
+                newSectionId,
+                modulesMap,
+                assignMap);
+    }
+
     public void copyAssignmentsToNewSection(
             CopyAssignmentTO srcAssignment, long oldSectionID,
                                             long newSectionID,
@@ -214,6 +227,9 @@ public class AssignmentCopyService  implements IAssignmentCopyService{
     public void deleteActivityItemsByActivityId(long actNID) {
         assignmentCopyDAO.deleteActivityItemsByActivityId(actNID);
     }
+
+
+
 /*
 
 

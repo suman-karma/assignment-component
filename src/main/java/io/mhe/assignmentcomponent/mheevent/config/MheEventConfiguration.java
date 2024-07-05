@@ -20,11 +20,12 @@ private Logger logger = LoggerFactory.getLogger(MheEventConfiguration.class);
 		  taskExecutor.setThreadNamePrefix("MheEvent - "); 
 		  //Set for testing, will decide the actual values after analysis
 		  taskExecutor.setAwaitTerminationSeconds(10); 
-		  String poolSize = Util.getConfigValue(MheEventConstants.MHE_EVENT_MAX_POOL_SIZE);
+		  String poolSize = "25"; //Util.getConfigValue(MheEventConstants.MHE_EVENT_MAX_POOL_SIZE);
 			if (logger.isDebugEnabled()) {
 				logger.debug("MAX POOL SIZE " + poolSize);			
 			}
-			taskExecutor.setMaxPoolSize(Integer.parseInt(poolSize));
+	  logger.error("MAX POOL SIZE " + poolSize);
+	  taskExecutor.setMaxPoolSize(Integer.parseInt(poolSize));
 		  return taskExecutor; 
   }
 

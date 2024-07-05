@@ -8,10 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
-import org.springframework.jdbc.core.BatchPreparedStatementSetter;
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.RowMapper;
-import org.springframework.jdbc.core.SqlParameter;
+import org.springframework.jdbc.core.*;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.core.simple.SimpleJdbcCall;
@@ -100,7 +97,6 @@ public class AssignmentCopyDAO implements IAssignmentCopyDAO{
 
         connection = jdbcTemplate.getDataSource().getConnection().unwrap(OracleConnection.class);;
         SimpleJdbcCall simpleJdbcCall = new SimpleJdbcCall(jdbcTemplate)
-                //.withSchemaName("")
                 .withProcedureName("hm_copy_public_assignments")
                 .declareParameters(new SqlParameter[]{
                         new SqlParameter("srcAssignmentIds", Types.ARRAY),
@@ -109,13 +105,14 @@ public class AssignmentCopyDAO implements IAssignmentCopyDAO{
                         new SqlParameter("oldCategoryId", Types.ARRAY),
                         new SqlParameter("newCategoryId", Types.ARRAY),
                         // out param
-                        new SqlParameter("newAssignmentIds", Types.VARCHAR),
+                        new SqlOutParameter("newAssignmentIds", Types.VARCHAR),
                         new SqlParameter("primaryInstructorId", Types.VARCHAR),
                         new SqlParameter("newNativeAlaIds", Types.ARRAY),
                         new SqlParameter("newCourseId", Types.NUMERIC),
                         new SqlParameter("originalCourseId", Types.NUMERIC),
                         new SqlParameter("isProctringCopyEnabled", Types.VARCHAR),
                 })
+
                 .returningResultSet("", new RowMapper<String>() {
                     @Override
                     public String mapRow(ResultSet rs, int rowNum) throws SQLException {
@@ -144,9 +141,8 @@ public class AssignmentCopyDAO implements IAssignmentCopyDAO{
         mapSqlParameterSource.addValue("srcAssignmentIds",srcAssignmentArray);
         mapSqlParameterSource.addValue("sectionId",srcSectionId);
         mapSqlParameterSource.addValue("newSectionId",dstSectionId);
-        mapSqlParameterSource.addValue("oldCategoryId",dstSectionId);
-        mapSqlParameterSource.addValue("newCategoryId",dstSectionId);
-        // out param.
+        mapSqlParameterSource.addValue("oldCategoryId",oldCatArray);
+        mapSqlParameterSource.addValue("newCategoryId",newCatArray);
         mapSqlParameterSource.addValue("primaryInstructorId",srcAssignments[0].newPrimaryInstructorId());
         mapSqlParameterSource.addValue("newNativeAlaIds",newNativeidArray);
         mapSqlParameterSource.addValue("newCourseId",newCourseId);
@@ -222,16 +218,16 @@ public class AssignmentCopyDAO implements IAssignmentCopyDAO{
                 });
 
             ArrayDescriptor descriptor = ArrayDescriptor.createDescriptor("NUM_ARRAY", connection);
-            ARRAY srcModuleArray = new ARRAY(descriptor, connection, srcSectionIds);
-            ARRAY dstModuleArray = new ARRAY(descriptor, connection, destSectionIds);
-            ARRAY srcAssignmentArray = new ARRAY(descriptor, connection, srcAssignmentIds);
-            ARRAY dstAssignmentArray = new ARRAY(descriptor, connection, dstAssignmentIds);
+            ARRAY srcSectionIdsArray = new ARRAY(descriptor, connection, srcSectionIds);
+            ARRAY destSectionIdsArray = new ARRAY(descriptor, connection, destSectionIds);
+            ARRAY srcAssignmentIdsArray = new ARRAY(descriptor, connection, srcAssignmentIds);
+            ARRAY dstAssignmentIdsArray = new ARRAY(descriptor, connection, dstAssignmentIds);
 
             MapSqlParameterSource mapSqlParameterSource = new MapSqlParameterSource();
-            mapSqlParameterSource.addValue("srcSectionIds",srcAssignmentArray);
-            mapSqlParameterSource.addValue("dstSectionIds",destSectionIds);
-            mapSqlParameterSource.addValue("srcAssignmentIds",srcAssignmentIds);
-            mapSqlParameterSource.addValue("dstAssignmentIds",dstAssignmentIds);
+            mapSqlParameterSource.addValue("srcSectionIds",srcSectionIdsArray);
+            mapSqlParameterSource.addValue("dstSectionIds",destSectionIdsArray);
+            mapSqlParameterSource.addValue("srcAssignmentIds",srcAssignmentIdsArray);
+            mapSqlParameterSource.addValue("dstAssignmentIds",dstAssignmentIdsArray);
 
             Map<String, Object> result = simpleJdbcCall.execute(mapSqlParameterSource);
 
@@ -298,7 +294,7 @@ public class AssignmentCopyDAO implements IAssignmentCopyDAO{
                         // Adding native id information.
                         act.setNativeAlaId(rs.getString("NATIVE_ALA_ID"));
                         act.setAlaContentProvider(rs.getString("ALA_CONTENT_PROVIDER"));
-
+                        logger.info("#################### {}", act);
                         return act;
                     }
                 });
