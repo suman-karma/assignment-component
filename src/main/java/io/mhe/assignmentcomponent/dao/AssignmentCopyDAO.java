@@ -123,9 +123,9 @@ public class AssignmentCopyDAO implements IAssignmentCopyDAO{
         long[] srcAssignmentIds = new long[srcAssignments.length];
         String[] newNativeIdsArray = new String[srcAssignments.length];
         for (int i = 0; i < srcAssignments.length; i++) {
-            map.put("" + srcAssignments[i].assignmentId(), srcAssignments[i]);
-            srcAssignmentIds[i] = srcAssignments[i].assignmentId();
-            newNativeIdsArray[i] = srcAssignments[i].newNativeAlaId();
+            map.put("" + srcAssignments[i].getAssignmentId(), srcAssignments[i]);
+            srcAssignmentIds[i] = srcAssignments[i].getAssignmentId();
+            newNativeIdsArray[i] = srcAssignments[i].getNewNativeAlaId();
         }
 
         ArrayDescriptor descriptor = ArrayDescriptor.createDescriptor("NUM_ARRAY", connection);
@@ -137,13 +137,27 @@ public class AssignmentCopyDAO implements IAssignmentCopyDAO{
         ARRAY newNativeidArray = new ARRAY(stringDescriptor, connection, newNativeIdsArray);
         ARRAY srcAssignmentArray = new ARRAY(descriptor, connection, srcAssignmentIds);
 
+        //
+        logger.info("*********************************************");
+        logger.info("srcAssignmentIds {}",srcAssignmentArray);
+        logger.info("sectionId {}",srcSectionId);
+        logger.info("newSectionId {}",dstSectionId);
+        logger.info("oldCategoryId {}",oldCatArray);
+        logger.info("newCategoryId {}",newCatArray);
+        logger.info("primaryInstructorId {}",srcAssignments[0].getNewPrimaryInstructorId());
+        logger.info("newNativeAlaIds {}",newNativeidArray);
+        logger.info("newCourseId {}",newCourseId);
+        logger.info("originalCourseId {}",originalCourseId);
+        logger.info("*********************************************");
+        //
+
         MapSqlParameterSource mapSqlParameterSource = new MapSqlParameterSource();
         mapSqlParameterSource.addValue("srcAssignmentIds",srcAssignmentArray);
         mapSqlParameterSource.addValue("sectionId",srcSectionId);
         mapSqlParameterSource.addValue("newSectionId",dstSectionId);
         mapSqlParameterSource.addValue("oldCategoryId",oldCatArray);
         mapSqlParameterSource.addValue("newCategoryId",newCatArray);
-        mapSqlParameterSource.addValue("primaryInstructorId",srcAssignments[0].newPrimaryInstructorId());
+        mapSqlParameterSource.addValue("primaryInstructorId",srcAssignments[0].getNewPrimaryInstructorId());
         mapSqlParameterSource.addValue("newNativeAlaIds",newNativeidArray);
         mapSqlParameterSource.addValue("newCourseId",newCourseId);
         mapSqlParameterSource.addValue("originalCourseId",originalCourseId);
@@ -154,8 +168,11 @@ public class AssignmentCopyDAO implements IAssignmentCopyDAO{
         // get from result.
         String newAssignmentIdStr = (String) result.get("newAssignmentIds");
 
+        logger.info("&&&&&&&&&&&&&&&&&&             newAssignmentIdStr {} -- {}", newAssignmentIdStr , newAssignmentIdStr.substring(1));
+        srcAssignments[0].setNewAssignmentId(Long.parseLong(newAssignmentIdStr.substring(1)));
+
         // to do assignments with line item to copy
-        /*
+       /*
         String[] newAssignmentIds = GenUtil.getArrayFromString(newAssignmentIdStr.substring(1), ",");
 
         ArrayList<CopyAssignment> assignmentsWithLineItems = new ArrayList<CopyAssignment>();
@@ -415,7 +432,7 @@ public class AssignmentCopyDAO implements IAssignmentCopyDAO{
         paramMap.put("NativeAlaId", act.getNativeAlaId());
         paramMap.put("alaContentProvider", act.getAlaContentProvider());
         paramMap.put("assignmentID", assignmentId);
-        jdbcTemplate.update(UPDATE_ACTIVITY_WITH_ALA, paramMap);
+        namedParameterJdbcTemplate.update(UPDATE_ACTIVITY_WITH_ALA, paramMap);
         return act.getID();
     }
 
@@ -423,12 +440,12 @@ public class AssignmentCopyDAO implements IAssignmentCopyDAO{
     public void updateAssignmentUpdatedDate(long assignmentId) {
         Map<String, Object> paramMap = new HashMap<String, Object>();
         paramMap.put("assignmentId", assignmentId);
-        jdbcTemplate.update(UPDATE_ASSIGNMENT_UPDATED_DATE, paramMap);
+        namedParameterJdbcTemplate.update(UPDATE_ASSIGNMENT_UPDATED_DATE, paramMap);
     }
 
     @Override
     public long addActivityToAssignment(Activity act, long assignmentID) {
-
+        logger.info(" adding activities...addActivityToAssignment {}", assignmentID);
         try {
             act.setID(generateIDUsingSequence(SEQUENCE_NAME));
             long seq = 0;
@@ -477,12 +494,13 @@ public class AssignmentCopyDAO implements IAssignmentCopyDAO{
             parameterMap.put("NATIVE_ALA_ID", act.getNativeAlaId());
             parameterMap.put("ALA_CONTENT_PROVIDER", act.getAlaContentProvider());
 
-            jdbcTemplate.update(ADD_NEW_ACTIVITY_FOR_CLOB, parameterMap);
+            namedParameterJdbcTemplate.update(ADD_NEW_ACTIVITY_FOR_CLOB, parameterMap);
 
             return act.getID();
         } catch (Exception de) {
-
+            de.printStackTrace();
         }
+        logger.info(" adding activities...addActivityToAssignment {} activity {}", assignmentID , act.getID());
         return act.getID();
     }
 
@@ -551,7 +569,7 @@ public class AssignmentCopyDAO implements IAssignmentCopyDAO{
 
     @Override
     public void insertSyncStatusForAssignment(long assignmentId, String nativeAlaId, String status) {
-        logger.debug("AssignmentDatatStore : Insert sync status : assignmentId = " + assignmentId
+        logger.debug("###### AssignmentDatatStore : Insert sync status : assignmentId = " + assignmentId
                 + " nativeAlaId = " + nativeAlaId + " status = " + status);
         Map<String, Object> syncStatusForAssignment = new HashMap<String, Object>();
         syncStatusForAssignment.put("assignmentId", assignmentId);

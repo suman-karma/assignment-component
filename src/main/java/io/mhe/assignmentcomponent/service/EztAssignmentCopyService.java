@@ -32,10 +32,10 @@ public class EztAssignmentCopyService extends AssignmentCopyService{
                                             HashMap modulesMap,
                                             Map assignMap) throws Exception {
         try {
-            logger.error("####################### in copyAssignmentsToNewSection");
+            logger.error("####################### in copyAssignmentsToNewSection srcAssignment {}",srcAssignment);
             this.copyHMPublicAssignments(new CopyAssignmentTO[] { srcAssignment }, oldSectionID, newSectionID,
                     origCategoryIds, newCategoryIds, newCourseId, newSectionId);
-
+            logger.error("####################### in copyAssignmentsToNewSection after set1 srcAssignment {}",srcAssignment);
             Map<Long, Long> sectionIdsMap = new HashMap<Long, Long>();
             HashMap assignmentsMapForSection = new HashMap();
 
@@ -43,31 +43,35 @@ public class EztAssignmentCopyService extends AssignmentCopyService{
             assignmentsMapForSection.clear();
 
             sectionIdsMap.put(oldSectionID, newSectionID);
-            assignmentsMapForSection.put(srcAssignment.assignmentId(), srcAssignment.newAssignmentId());
+            assignmentsMapForSection.put(srcAssignment.getAssignmentId(), srcAssignment.getNewAssignmentId());
             this.copySectionAssignmentXref(sectionIdsMap, assignmentsMapForSection);
 
             // ezt
+
             iIntegrationRestService.copyXWorkFlow(new
                     CopyAssignmentTO[] { srcAssignment }); // ezt call to do
-            if ("failed".equals(srcAssignment.copyEZTStatus())) {
-                assignmentCopyDAO.deleteMultipleAssignments(Arrays.asList(srcAssignment.newAssignmentId()));
+            logger.error("####################### in copyAssignmentsToNewSection after set 2  srcAssignment {}",srcAssignment);
+            if ("failed".equals(srcAssignment.getCopyEZTStatus())) {
+                assignmentCopyDAO.deleteMultipleAssignments(Arrays.asList(srcAssignment.getNewAssignmentId()));
                 throw new Exception("EZTO copy for the assignment failed");
             }
-            if (srcAssignment.newNativeAlaId() != null) {
-
-                this.registerActivityFirstTime(srcAssignment.newAssignmentId(), srcAssignment.newNativeAlaId(),
-                        srcAssignment.title());
-                Activity[] activity = this.getActivitiesForAssignment(srcAssignment.assignmentId());
-                this.updatePointsAndQuestionsForAssignment(srcAssignment.newAssignmentId(),
+            if (srcAssignment.getNewNativeAlaId() != null) {
+                logger.info("######### srcAssignment {}", srcAssignment);
+                this.registerActivityFirstTime(srcAssignment.getNewAssignmentId(), srcAssignment.getNewNativeAlaId(),
+                        srcAssignment.getTitle());
+                Activity[] activity = this.getActivitiesForAssignment(srcAssignment.getAssignmentId());
+                logger.info("######### activity length {} srcAssignment.getAssignmentId() {}", activity.length , srcAssignment.getAssignmentId());
+                this.updatePointsAndQuestionsForAssignment(srcAssignment.getNewAssignmentId(),
                         activity[0].getWeight(), activity[0].getQuestions(), activity[0].getAvailableQuestions());
 
                 // Changing the initial sync status from Required to In-Progress because we are going to sync the
                 // assignment later using the pullRegistrationMultiple API.
-                this.insertSyncStatusForAssignment(srcAssignment.newAssignmentId(),
-                        srcAssignment.newNativeAlaId(), "In Progress");
+                logger.info("######## srcAssignment.getNewAssignmentId() {} srcAssignment.getNewNativeAlaId() {}", srcAssignment.getNewAssignmentId(), srcAssignment.getNewNativeAlaId());
+                this.insertSyncStatusForAssignment(srcAssignment.getNewAssignmentId(),
+                        srcAssignment.getNewNativeAlaId(), "In Progress");
                 // Inserting record in assignment_parent_status to check the parent status in registration flow.
                 try{
-                    this.insertParentAssignmentStatusForAssignment(srcAssignment.newAssignmentId(), srcAssignment.assignmentId(), srcAssignment.parentAssignmentStatus());
+                    this.insertParentAssignmentStatusForAssignment(srcAssignment.getNewAssignmentId(), srcAssignment.getAssignmentId(), srcAssignment.getParentAssignmentStatus());
                 }catch(Exception ex){
                     logger.error("Error while inserting parent assignment status", ex);
                 }
@@ -77,11 +81,11 @@ public class EztAssignmentCopyService extends AssignmentCopyService{
             }
 
             // ezt
-            iIntegrationRestService.pullRegistrationMultiple( new AssignmentTO(srcAssignment.assignmentId(),srcAssignment.nativeAlaId()));
+            iIntegrationRestService.pullRegistrationMultiple( new AssignmentTO(srcAssignment.getAssignmentId(),srcAssignment.getNativeAlaId()));
 
-            logger.error("####################### in copyAssignmentsToNewSection end");
+            logger.error("####################### in copyAssignmentsToNewSection completed");
         } catch (Exception e) {
-            assignmentCopyDAO.deleteMultipleAssignments(Arrays.asList(srcAssignment.newAssignmentId()));
+            assignmentCopyDAO.deleteMultipleAssignments(Arrays.asList(srcAssignment.getNewAssignmentId()));
             throw e;
         }
     }

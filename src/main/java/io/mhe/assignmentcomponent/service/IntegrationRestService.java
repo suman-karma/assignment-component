@@ -1,6 +1,7 @@
 package io.mhe.assignmentcomponent.service;
 
 import io.mhe.assignmentcomponent.common.util.HashingUtil;
+import io.mhe.assignmentcomponent.common.util.XmlUtils;
 import io.mhe.assignmentcomponent.vo.*;
 
 import org.apache.hc.client5.http.classic.HttpClient;
@@ -38,33 +39,41 @@ public class IntegrationRestService implements IIntegrationRestService {
     public void copyXWorkFlow(
             CopyAssignmentTO[] assignments) throws Exception {
 
-        // get the max assignmnet copy count from config or set default if absent.
-        //
-        //String url = "ezt server host "; // get it from env variable or config.
-
         StringBuffer thePostData = new StringBuffer();
         String xml = getCopyAssignmentXML(assignments);
         thePostData.append("todo=copyx");
-        String md5String = HashingUtil.getDigest("transaction_id=" + assignments[0].assignmentId(),
+        String md5String = HashingUtil.getDigest("transaction_id=" + assignments[0].getAssignmentId(),
                 eztPassPhase);
-        thePostData.append("&transaction_id=").append(assignments[0].assignmentId());
+        thePostData.append("&transaction_id=").append(assignments[0].getAssignmentId());
         thePostData.append("&key=").append(md5String);
        // thePostData.append("&xml=").append(URLEncoder.encode(xml));
         thePostData.append("&xml=").append(xml);
 
         logger.info(xml);
         logger.info("### calling ezt copyx {} eztest.pass.phrase {}",eztestUrl+"?"+thePostData.toString() , eztPassPhase);
-        String productCreateResponse = restTemplate.getForObject(eztestUrl+"?"+thePostData.toString() ,  String.class);
+        String eztoCopyxResponse = restTemplate.getForObject(eztestUrl+"?"+thePostData.toString() ,  String.class);
 
-        logger.info("### respons from ezto : {}", productCreateResponse);
-        // check productCreateResponse response from ezto. TO DO
+        logger.info("### respons from ezto : {}", eztoCopyxResponse);
+        // check eztoCopyxResponse response from ezto.
+        Element txNode = XmlUtils.buildDOMTree(eztoCopyxResponse);
+        Element[] assignmentNodes = XmlUtils.getChildElements(txNode, "assignment");
 
+        String assignmentId = assignmentNodes[0].getAttributeValue("id");
+        String error = assignmentNodes[0].getAttributeValue("error");
+
+        if (error == null || error.equals("")) {
+            String newNativeId = assignmentNodes[0].getAttributeValue("new_nativeid");
+            // set native ala id
+            assignments[0].setNewNativeAlaId(newNativeId);
+        } else {
+            // change for Copy Assignment Failure
+            assignments[0].setCopyEZTStatus("failed");
+            assignments[0].setError(error);
+        }
     }
 
     @Override
     public String pullRegistrationMultiple(AssignmentTO assignmentTO) throws Exception {
-        // get the max assignmnet copy count from config or set default if absent.
-        //String url = "ezt server host "; // get it from env variable or config.
 
         String xml = getPullRegistrationXML(assignmentTO);
         StringBuffer thePostData = new StringBuffer();
@@ -73,12 +82,8 @@ public class IntegrationRestService implements IIntegrationRestService {
         String md5String = HashingUtil.getDigest("todo=pullRegistrationMultiple", eztPassPhase);
         thePostData.append("&key=").append(md5String);
         thePostData.append("&xml=").append(xml);
-
-
-        HttpEntity<String> request = new HttpEntity<String>(
-                "");
-
-        String productCreateResponse = restTemplate.postForEntity(eztestUrl+thePostData.toString() , request, String.class).getBody();
+        logger.info("######### pull registration multiple call url {} ", eztestUrl+"?"+thePostData.toString());
+        String productCreateResponse = restTemplate.getForObject(eztestUrl+"?"+thePostData.toString() ,  String.class);
         logger.info("pull registration multiple productCreateResponse {}",productCreateResponse);
         // check productCreateResponse response from ezto. TO DO
 
@@ -106,16 +111,17 @@ public class IntegrationRestService implements IIntegrationRestService {
         Element txNode = new Element("transaction");
         txNode.setAttribute("name", "copyx");
         txNode.setAttribute("version", "3");
-        txNode.setAttribute("transaction_id", "" + assignments[0].assignmentId());
+       // txNode.setAttribute("transaction_id", "" + assignments[0].assignmentId());
+        txNode.setAttribute("transaction_id", "" + assignments[0].getAssignmentId());
 
         for (int i = 0; i < assignments.length; i++) {
-            if (assignments[i].nativeAlaId() != null && !"".equals(assignments[i].nativeAlaId())) {
+            if (assignments[i].getNativeAlaId() != null && !"".equals(assignments[i].getNativeAlaId())) {
                 Element assign = new Element("assignment");
-                assign.setAttribute("id", "" + assignments[i].assignmentId());
-                assign.setAttribute("original_nativeid", assignments[i].nativeAlaId());
-                assign.setAttribute("new_title", assignments[i].newTitle());
+                assign.setAttribute("id", "" + assignments[i].getAssignmentId());
+                assign.setAttribute("original_nativeid", assignments[i].getNativeAlaId());
+                assign.setAttribute("new_title", assignments[i].getNewTitle());
                 // adding user_id of the user where the assignment is going to be copied.
-                assign.setAttribute("destination_owner", assignments[i].newPrimaryInstructorId());
+                assign.setAttribute("destination_owner", assignments[i].getNewPrimaryInstructorId());
                 txNode.addContent(assign);
             }
         }

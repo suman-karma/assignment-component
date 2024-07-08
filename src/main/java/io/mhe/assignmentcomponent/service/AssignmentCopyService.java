@@ -164,7 +164,7 @@ public class AssignmentCopyService  implements IAssignmentCopyService{
     @Override
     public boolean addActivitiesAndItemsForAssignment(Activity activity, long assignmentId) throws Exception{
         Activity[] existingActivities = this.getActivitiesForAssignment(assignmentId);
-
+        logger.info(" adding activities...");
         // Step 5 If Existing Activities , Activity Items are not null then delete Activities and Activity Items and all
         // the Associations
         if (existingActivities != null && existingActivities.length > 1) {
@@ -175,7 +175,7 @@ public class AssignmentCopyService  implements IAssignmentCopyService{
         }
 
         long actNID = 0l;
-
+        logger.info(" adding activities... existingActivities {}", existingActivities);
         if (existingActivities != null && existingActivities.length == 1) {
             if (logger.isDebugEnabled()) {
                 logger.debug("addAct = " + activity);
@@ -189,6 +189,7 @@ public class AssignmentCopyService  implements IAssignmentCopyService{
                     + (System.currentTimeMillis() - beginUpdateActivity) + " ms");
         } else {
             long addActivityTime = System.currentTimeMillis();
+            logger.info(" adding activities... addActivityToAssignment activity {} assignmentId {}", activity, assignmentId);
             actNID = this.addActivityToAssignment(activity, assignmentId);
             logger.debug("AlaManagerBusinessService.addActivitiesRegistrationInfo() - Time taken for adding activity to activity table "
                     + (System.currentTimeMillis() - addActivityTime) + " ms");
@@ -199,9 +200,10 @@ public class AssignmentCopyService  implements IAssignmentCopyService{
             this.deleteActivityItemsByActivityId(actNID);
         }
         if (activity.getActivityItems() != null) {
+            logger.info(" adding activities...items");
             this.addActivityItemsToActivity(activity.getActivityItems(), actNID);
         }
-        logger.debug(" Activities Created and associated with Assignment ");
+        logger.info(" Activities Created and associated with Assignment ");
         return true;
     }
 
