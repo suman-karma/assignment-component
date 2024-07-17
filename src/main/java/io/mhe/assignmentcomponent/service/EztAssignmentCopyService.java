@@ -83,6 +83,11 @@ public class EztAssignmentCopyService extends AssignmentCopyService{
             // ezt
             iIntegrationRestService.pullRegistrationMultiple( new AssignmentTO(srcAssignment.getAssignmentId(),srcAssignment.getNativeAlaId()));
 
+            assignMap.put("" + srcAssignment.getAssignmentId(), "" + srcAssignment.getNewAssignmentId());
+            logger.info("####### modulesMap {}", modulesMap);
+            logger.info("####### assignMap {}", assignMap);
+            this.copyModuleAssignmentMapping(modulesMap, assignMap);
+
             logger.error("####################### in copyAssignmentsToNewSection completed");
         } catch (Exception e) {
             assignmentCopyDAO.deleteMultipleAssignments(Arrays.asList(srcAssignment.getNewAssignmentId()));
@@ -91,6 +96,9 @@ public class EztAssignmentCopyService extends AssignmentCopyService{
     }
 
 
+    public void copyModuleAssignmentMapping(Map<String, String> modulesMap, Map<String, String> assignmentsMap) {
+        assignmentCopyDAO.copyModuleAssignmentMapping(modulesMap, assignmentsMap);
+    }
 
 
 }

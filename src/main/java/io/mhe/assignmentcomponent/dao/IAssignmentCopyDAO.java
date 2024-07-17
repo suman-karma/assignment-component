@@ -44,4 +44,5 @@ public interface IAssignmentCopyDAO {
 
     void insertParentAssignmentStatusForAssignment(long assignmentId, long parentAssignmentId, String status);
 
+    public void copyModuleAssignmentMapping(Map<String, String> modulesMap,Map<String, String> assignmentsMap);
 }

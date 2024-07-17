@@ -68,6 +68,9 @@ public interface IAssignmentCopyService {
 
     boolean addActivitiesAndItemsForAssignment(Activity activity, long assignmentId)throws Exception;
 
+
+    public void copyModuleAssignmentMapping(Map<String, String> modulesMap, Map<String, String> assignmentsMap);
+
     /*
     public GroupAssignment getGroupAssignmentById(long assignmentId, long sectionId); // is this requried group assignmet import?
 

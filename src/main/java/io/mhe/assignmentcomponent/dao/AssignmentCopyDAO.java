@@ -798,4 +798,60 @@ public class AssignmentCopyDAO implements IAssignmentCopyDAO{
         }
         return cost;
     }
+
+    public void copyModuleAssignmentMapping(Map<String, String> modulesMap,Map<String, String> assignmentsMap) {
+
+        try {
+            Iterator<Map.Entry<String, String>> it = modulesMap.entrySet().iterator();
+            long[] srcModuleIds = new long[modulesMap.size()];
+            long[] destModuleIds = new long[modulesMap.size()];
+            int i = 0;
+            while (it.hasNext()) {
+                Map.Entry<String, String> e = it.next();
+                srcModuleIds[i] = Long.parseLong(e.getKey());
+                destModuleIds[i] = Long.parseLong(e.getValue());
+                i++;
+            }
+
+            it = assignmentsMap.entrySet().iterator();
+            long[] srcAssignmentIds = new long[assignmentsMap.size()];
+            long[] dstAssignmentIds = new long[assignmentsMap.size()];
+            i = 0;
+            while (it.hasNext()) {
+                Map.Entry<String, String> e = (Map.Entry) it.next();
+                srcAssignmentIds[i] = Long.parseLong(e.getKey());
+                dstAssignmentIds[i] = Long.parseLong(e.getValue());
+                i++;
+            }
+
+            connection = jdbcTemplate.getDataSource().getConnection().unwrap(OracleConnection.class);
+
+            SimpleJdbcCall simpleJdbcCall = new SimpleJdbcCall(jdbcTemplate)
+                    //.withSchemaName("")
+                    .withProcedureName("copy_module_assignment_mapping")
+                    .declareParameters(new SqlParameter[]{
+                            new SqlParameter("srcModuleIds", Types.ARRAY),
+                            new SqlParameter("dstModuleIds", Types.ARRAY),
+                            new SqlParameter("srcAssignmentIds", Types.ARRAY),
+                            new SqlParameter("dstAssignmentIds", Types.ARRAY)
+                    });
+
+            ArrayDescriptor descriptor = ArrayDescriptor.createDescriptor("NUM_ARRAY", connection);
+            ARRAY srcModuleIdsArray = new ARRAY(descriptor, connection, srcModuleIds);
+            ARRAY destModuleIdsArray = new ARRAY(descriptor, connection, destModuleIds);
+            ARRAY srcAssignmentIdsArray = new ARRAY(descriptor, connection, srcAssignmentIds);
+            ARRAY dstAssignmentIdsArray = new ARRAY(descriptor, connection, dstAssignmentIds);
+
+            MapSqlParameterSource mapSqlParameterSource = new MapSqlParameterSource();
+            mapSqlParameterSource.addValue("srcModuleIds",srcModuleIdsArray);
+            mapSqlParameterSource.addValue("dstModuleIds",destModuleIdsArray);
+            mapSqlParameterSource.addValue("srcAssignmentIds",srcAssignmentIdsArray);
+            mapSqlParameterSource.addValue("dstAssignmentIds",dstAssignmentIdsArray);
+
+            Map<String, Object> result = simpleJdbcCall.execute(mapSqlParameterSource);
+
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
 }

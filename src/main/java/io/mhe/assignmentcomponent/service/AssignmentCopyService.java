@@ -207,6 +207,7 @@ public class AssignmentCopyService  implements IAssignmentCopyService{
         return true;
     }
 
+
     @Override
     public long updateActivity(Activity activity, long assignmentId) {
         return assignmentCopyDAO.updateActivity(activity,assignmentId);
@@ -229,7 +230,10 @@ public class AssignmentCopyService  implements IAssignmentCopyService{
     public void deleteActivityItemsByActivityId(long actNID) {
         assignmentCopyDAO.deleteActivityItemsByActivityId(actNID);
     }
-
+    @Override
+    public void copyModuleAssignmentMapping(Map<String, String> modulesMap, Map<String, String> assignmentsMap) {
+        assignmentCopyDAO.copyModuleAssignmentMapping(modulesMap, assignmentsMap);
+    }
 
 
 /*

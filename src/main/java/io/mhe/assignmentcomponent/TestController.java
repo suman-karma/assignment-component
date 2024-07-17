@@ -70,7 +70,7 @@ public class TestController {
         long newCourseId = 516194522l;
         long newSectionId = 516194523l;
         HashMap modulesMap = new HashMap();
-        Map assignMap = new HashMap();;
+        Map assignMap = new HashMap();
         modulesMap.put("2154626681","2154659051");
         modulesMap.put("2154626680", "2154659050");
 
