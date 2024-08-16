@@ -1,9 +1,11 @@
 package io.mhe.assignmentcomponent.dao;
 
+import io.mhe.assignmentcomponent.common.util.Utility;
 import io.mhe.assignmentcomponent.vo.*;
 import oracle.jdbc.OracleConnection;
 import oracle.sql.ARRAY;
 import oracle.sql.ArrayDescriptor;
+import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,11 +14,13 @@ import org.springframework.jdbc.core.*;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.core.simple.SimpleJdbcCall;
+import org.springframework.jdbc.datasource.DataSourceUtils;
 import org.springframework.stereotype.Repository;
 
 import java.sql.Date;
 import java.sql.*;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Repository
 public class AssignmentCopyDAO implements IAssignmentCopyDAO{
@@ -25,6 +29,9 @@ public class AssignmentCopyDAO implements IAssignmentCopyDAO{
     private NamedParameterJdbcTemplate namedParameterJdbcTemplate;
     @Autowired
     private JdbcTemplate jdbcTemplate;
+
+    @Autowired
+    private INonForceGradeAssignmentsDAO iNonForceGradeAssignmentsDAO;
 
     private Connection connection = null;
     static final String SEQUENCE_NAME                   = "GBS_SEQUENCE";
@@ -172,12 +179,12 @@ public class AssignmentCopyDAO implements IAssignmentCopyDAO{
         srcAssignments[0].setNewAssignmentId(Long.parseLong(newAssignmentIdStr.substring(1)));
 
         // to do assignments with line item to copy
-       /*
-        String[] newAssignmentIds = GenUtil.getArrayFromString(newAssignmentIdStr.substring(1), ",");
 
-        ArrayList<CopyAssignment> assignmentsWithLineItems = new ArrayList<CopyAssignment>();
+        String[] newAssignmentIds = Utility.getArrayFromString(newAssignmentIdStr.substring(1), ",");
+
+        ArrayList<CopyAssignmentTO> assignmentsWithLineItems = new ArrayList<CopyAssignmentTO>();
         for (int i = 0; i < newAssignmentIds.length; i++) {
-            CopyAssignment copy = (CopyAssignment) map.get("" + srcAssignmentIds[i]);
+            CopyAssignmentTO copy = (CopyAssignmentTO) map.get("" + srcAssignmentIds[i]);
             copy.setNewAssignmentId(Long.parseLong(newAssignmentIds[i]));
             if (copy.getType().equals("WRITING") ||
                     copy.getType().equals("BLOG") ||
@@ -188,8 +195,23 @@ public class AssignmentCopyDAO implements IAssignmentCopyDAO{
         }
 
         this.copyAssignmentLineItemsForMultipleAssignments(
-                assignmentsWithLineItems.toArray(new CopyAssignment[0]));
-         */
+                assignmentsWithLineItems.toArray(new CopyAssignmentTO[0]));
+
+        Map<Long, List<Long>> mapSectionAssignment = new HashMap<Long, List<Long>>();
+
+        List<Long> assignmentlist = Arrays.stream(newAssignmentIds)
+                .filter(assignStr -> StringUtils.isNumeric(assignStr))
+                .map(Long::parseLong)
+                .collect(Collectors.toList());
+        mapSectionAssignment.put(dstSectionId,assignmentlist);
+        try {
+            iNonForceGradeAssignmentsDAO.insertOrUpdateDate(mapSectionAssignment);
+            logger.debug("[ASSIGNMENT_DATE_UPDATE] Successfully added/updated data from AssignmentListsDaoJdbc.copyHMPublicAssignments with mapSectionAssignment:{} ", new Object[] {mapSectionAssignment});
+        }catch (Exception ex) {
+            logger.error("[ASSIGNMENT_DATE_UPDATE] Exception occurs in AssignmentListsDaoJdbc.copyHMPublicAssignments with exception:{} ", new Object[] {ex});
+        }
+
+
 
       return true;
     }
@@ -854,4 +876,301 @@ public class AssignmentCopyDAO implements IAssignmentCopyDAO{
             throw new RuntimeException(e);
         }
     }
+
+    @Override
+    public void copyAssignmentLineItemsForMultipleAssignments(CopyAssignmentTO[] copyAssignments) throws Exception {
+        Connection conn = null;
+        PreparedStatement ps2 = null;
+
+        ResultSet rs1 = null;
+
+        HashMap<String, List<String>> dstAssignmentIdLineItemIdsMap = new HashMap<String, List<String>>();
+
+        String query1 = "insert into assignment_line_item (ID,ASSIGNMENT_ID,POLICY_INSTANCE_SET_ID,ASSIGN_LINE_ITEM_TYPE_ID,NAME,DELIVERABLE_FORMAT,CREATED_DATE,UPDATED_DATE,DRAFT_NO) "
+                +
+                "values (?, ?,  null, ?, ?, null, sysdate, sysdate, ?)";
+
+        String query2 = "select t1.policy_instance_set_id from SEC_LINE_ITEM_POLICY_INSTANCE t1, assignment_line_item t2 " +
+                " where t1.ASSIGN_LINE_ITEM_ID = t2.ID and t2.ASSIGNMENT_ID = ? and t1.SECTION_ID = ?  order by t2.draft_no desc";
+
+        String query4 = "insert into sec_assign_line_item_activity (ID,SECTION_ID,ASSIGN_LINE_ITEM_ID,AUTHOR_USER_ID,AUTHOR_ROLE_TYPE,STATUS,CREATED_DATE,UPDATED_DATE) "
+                +
+                "values (?, ?, ?, ?, ?, ?, sysdate, sysdate)";
+
+        try {
+            conn = jdbcTemplate.getDataSource().getConnection();
+            List<Object[]> batchParams = new ArrayList<Object[]>();
+
+            for (int i = 0; i < copyAssignments.length; i++) {
+                AssignmentLineItem[] lineItemsForSrcAssignment = this.getAssignmentLineItemsForAssignment(copyAssignments[i].getAssignmentId(),
+                        copyAssignments[i].getSectionId());
+
+                ArrayList<String> dstLineItemids = new ArrayList<String>();
+
+                /* Converting insert to jdbc template + adding column names to query- STARTS (TCS) */
+
+                for (int j = 0; j < lineItemsForSrcAssignment.length; j++) {
+                    long newAssignmentLineItemId = generateIDUsingSequence("gbs_sequence");
+
+                    /* Converting batch insert to jdbc template + adding column names to query- STARTS (TCS) */
+                    Object[] values = new Object[] {
+                            newAssignmentLineItemId,
+                            copyAssignments[i].getNewAssignmentId(),
+                            lineItemsForSrcAssignment[j].getAssignmentLineItemTypeId(),
+                            lineItemsForSrcAssignment[j].getName(),
+                            lineItemsForSrcAssignment[j].getDraftNo() };
+                    batchParams.add(values);
+
+                    dstLineItemids.add("" + newAssignmentLineItemId);
+                    if (copyAssignments[i].getType().equals("DISCUSSION")) {
+                        copyAssignments[i].getAssignmetnLineItemIds().add(newAssignmentLineItemId);
+                    }
+                }
+                dstAssignmentIdLineItemIdsMap.put("" + copyAssignments[i].getNewAssignmentId(), dstLineItemids);
+
+            }
+            jdbcTemplate.batchUpdate(query1, batchParams);
+
+            boolean flg = false;
+
+            batchParams = new ArrayList<Object[]>();
+            for (int i = 0; i < copyAssignments.length; i++) {
+                ps2 = conn.prepareStatement(query2);
+                ps2.setLong(1, copyAssignments[i].getAssignmentId());
+                ps2.setLong(2, copyAssignments[i].getSectionId());
+                rs1 = ps2.executeQuery();
+                List<String> dstLineItemIds = dstAssignmentIdLineItemIdsMap.get("" + copyAssignments[i].getNewAssignmentId());
+                // rs1 should contain same number of rows as the size of dstAssignmentIdLineItemIdsMap.get("" +
+                // copyAssignments[i].getNewAssignmentId())
+                // because both are derived from the number of line items in source assignment.
+                int j = 0;
+                List<AssignmentLineItem> dstAssignmentLineItems = new ArrayList<AssignmentLineItem>();
+                while (rs1.next()) {
+                    long srcPolicyInstanceSetId = rs1.getLong("policy_instance_set_id");
+                    long dstPolicyInstanceSetId = this.copyPolicyInstanceSet(srcPolicyInstanceSetId);
+
+                    AssignmentLineItem lineItem = new AssignmentLineItem();
+                    lineItem.setId(Long.parseLong(dstLineItemIds.get(j)));
+                    PolicyInstanceSet polInstSet = new PolicyInstanceSet();
+                    polInstSet.setId(dstPolicyInstanceSetId);
+                    lineItem.setPolicyInstanceSet(polInstSet);
+                    dstAssignmentLineItems.add(lineItem);
+                    j++;
+                }
+                this.addAssignmentLineItemsToSection(dstAssignmentLineItems.toArray(new AssignmentLineItem[0]), copyAssignments[i].getNewSectionId());
+
+                if (copyAssignments[i].getType().equals("DISCUSSION")) {
+                    for (Object lineItemid : copyAssignments[i].getAssignmetnLineItemIds()) {
+                        long actId = generateIDUsingSequence("gbs_sequence");
+                        /* Converting batch insert to jdbc template + adding column names to query- STARTS (TCS) */
+                        Object[] values = new Object[] {
+                                actId,
+                                copyAssignments[i].getNewSectionId(),
+                                Long.parseLong(lineItemid.toString()),
+                                copyAssignments[i].getNewPrimaryInstructorId(),
+                                "I",
+                                "not started" };
+                        batchParams.add(values);
+
+                        flg = true;
+                    }
+                }
+            }
+            if (flg) {
+                jdbcTemplate.batchUpdate(query4, batchParams);
+
+            }
+
+            logger.debug("Finished copy");
+        } catch (SQLException e) {
+            logger.error("", e);
+            logger.error("SQLException Message:" + e.getMessage());
+            throw new Exception(e);
+        } catch (DataAccessException e) {
+            logger.error("", e);
+            logger.error("SQLException Message:" + e.getMessage());
+            throw new Exception(e);
+        } finally {
+            releaseResources(conn, ps2, rs1);
+        }
+    }
+
+    public AssignmentLineItem[] getAssignmentLineItemsForAssignment(long assignmentId, long sectionId)
+            throws Exception {
+        Connection connection = null;
+        PreparedStatement ps = null;
+        ResultSet rst = null;
+        List<AssignmentLineItem> lineItemList = new ArrayList<AssignmentLineItem>();
+
+        try {
+            connection = jdbcTemplate.getDataSource().getConnection();
+            ps = connection.prepareStatement(GET_ASSINGMENT_LINE_ITEM);
+            ps.setLong(1, assignmentId);
+            ps.setLong(2, sectionId);
+            rst = ps.executeQuery();
+            while (rst.next()) {
+                AssignmentLineItem lineItem = new AssignmentLineItem();
+                lineItem.setId(rst.getLong("id"));
+                lineItem.setAssignmentLineItemTypeId(rst.getLong("assign_line_item_type_id"));
+                lineItem.setName(rst.getString("name"));
+                lineItem.setDraftNo(rst.getInt("draft_no"));
+                lineItem.setAssignmentId(assignmentId);
+                if (rst.getLong("sec_ali_pol_inst_id") > 0) {
+                    lineItem.setPolicyInstanceSet(getPolicyInstanceSetWithPolicies(rst.getLong("sec_ali_pol_inst_id")));
+                }
+                lineItemList.add(lineItem);
+
+            }
+
+            return lineItemList.toArray(new AssignmentLineItem[0]);
+        } catch (SQLException e) {
+            throw e;
+        } finally {
+            releaseResources(connection, ps, rst);
+        }
+
+    }
+
+    private static final String GET_ASSINGMENT_LINE_ITEM = "select ali.*, slp.policy_instance_set_id as sec_ali_pol_inst_id from assignment_line_item ali, assignment_line_item_type alit, sec_line_item_policy_instance slp "
+            + "where slp.assign_line_item_id = ali.id and ali.assign_line_item_type_id = alit.id and ali.assignment_id = ? and slp.section_id = ? order by ali.draft_no desc";
+
+    private static final String ADD_LINE_ITEMS_TO_SECTION = "insert into SEC_LINE_ITEM_POLICY_INSTANCE (ID,POLICY_INSTANCE_SET_ID,ASSIGN_LINE_ITEM_ID,SECTION_ID,CREATED_DATE,UPDATED_DATE) ";
+
+    private static final String GET_POLICY_INSTANCE = "select pis.*, pi.policy_id, pi.value, p.exchane_key, p.name as policy_name, p.is_content_policy from policy_instance_set pis "
+            + "left outer join policy_instance pi "
+            + "on pis.id = pi.policy_instance_set_id inner join policy p on p.id = pi.policy_id where pis.id = ?";
+
+    private static final String INSERT_POLICY_INSTANCE_SET = "insert into policy_instance_set (ID,NAME,POLICY_SET_ID,PARENT_INSTANCE_SET_ID,CREATED_DATE,UPDATED_DATE) "
+            +
+            "values(:id, :name, :policySetId, :parentInstanceSetId, sysdate, sysdate)";
+    private static final String INSERT_POLICY_INSTANCE_VALUES = "insert into policy_instance (ID,POLICY_ID,POLICY_INSTANCE_SET_ID,VALUE,CREATED_DATE,UPDATED_DATE) "
+            +
+            "values(:id, :policyId, :policyInstanceSetId, :value, sysdate, sysdate)";
+    public void addAssignmentLineItemsToSection(AssignmentLineItem[] lineItems, long sectionId) throws Exception {
+        try {
+
+            /* Converting insert to jdbc template + adding column names to query- STARTS (TCS) */
+            MapSqlParameterSource[] batchParams = new MapSqlParameterSource[lineItems.length];
+            for (int i = 0; i < lineItems.length; i++) {
+                batchParams[i] = new MapSqlParameterSource();
+                batchParams[i].addValue("id", generateIDUsingSequence("gbs_sequence"));
+                batchParams[i].addValue("policyInstanceSetId", lineItems[i].getPolicyInstanceSet().getId());
+                batchParams[i].addValue("assignLineItemId", lineItems[i].getId());
+                batchParams[i].addValue("sectionId", sectionId);
+
+            }
+            namedParameterJdbcTemplate.batchUpdate(ADD_LINE_ITEMS_TO_SECTION, batchParams);
+        } catch (DataAccessException e) {
+            throw e;
+        }
+    }
+
+    public PolicyInstanceSet getPolicyInstanceSetWithPolicies(long policyInstanceSetId) throws Exception {
+        Connection connection = null;
+        PreparedStatement ps = null;
+        ResultSet rst = null;
+        PolicyInstanceSet policyInstanceSet = null;
+        try {
+            connection = jdbcTemplate.getDataSource().getConnection();
+            ps = connection.prepareStatement(GET_POLICY_INSTANCE);
+            ps.setLong(1, policyInstanceSetId);
+            rst = ps.executeQuery();
+            while (rst.next()) {
+                if (policyInstanceSet == null) {
+                    policyInstanceSet = new PolicyInstanceSet();
+                    policyInstanceSet.setId(rst.getLong("id"));
+                    policyInstanceSet.setName(rst.getString("name"));
+                    policyInstanceSet.setPolicySetId(rst.getLong("policy_set_id"));
+                    policyInstanceSet.setPolicyList(new ArrayList<Policy>());
+                }
+
+                if (rst.getString("policy_id") != null && policyInstanceSet != null) {
+                    Policy p = new Policy();
+                    p.setId(rst.getLong("policy_id"));
+                    p.setExchange_key(rst.getString("exchane_key"));
+                    p.setName(rst.getString("policy_name"));
+                    p.setValue(rst.getString("value"));
+                    p.setContentDrivenPolicy("Y".equals(rst.getString("is_content_policy")) ? true : false);
+                    policyInstanceSet.getPolicyList().add(p);
+
+                }
+            }
+            return policyInstanceSet;
+        } catch (SQLException e) {
+            throw e;
+        } finally {
+            releaseResources(connection, ps, rst);
+        }
+
+    }
+
+    private long copyPolicyInstanceSet(long policyInstanceSetId) throws Exception {
+        PolicyInstanceSet policyInstanceSet = this.getPolicyInstanceSetWithPolicies(policyInstanceSetId);
+        return this.createPolicyInstanceSet(policyInstanceSet);
+
+    }
+
+    public long createPolicyInstanceSet(PolicyInstanceSet policyInstanceSet) throws Exception {
+        long policyInstanceSetId = 0l;
+
+        try {
+            policyInstanceSetId = generateIDUsingSequence("gbs_sequence");
+            policyInstanceSet.setId(policyInstanceSetId);
+
+            /* Converting insert to jdbc template + adding column names to query- STARTS (TCS) */
+            Map<String, Object> argsMap = new HashMap<String, Object>();
+            argsMap.put("id", policyInstanceSet.getId());
+            argsMap.put("name", policyInstanceSet.getName());
+            argsMap.put("policySetId", policyInstanceSet.getPolicySetId());
+            argsMap.put("parentInstanceSetId", null);
+
+            namedParameterJdbcTemplate.update(INSERT_POLICY_INSTANCE_SET, argsMap);
+
+            if (policyInstanceSet.getPolicyList() != null && policyInstanceSet.getPolicyList().size() > 0) {
+
+                /* Converting batch insert to jdbc template + adding column names to query- STARTS (TCS) */
+                List<MapSqlParameterSource> batch = new ArrayList<MapSqlParameterSource>();
+                for (Policy p : policyInstanceSet.getPolicyList()) {
+                    if (p.getValue() != null)
+                    {
+                        MapSqlParameterSource batchParams = new MapSqlParameterSource();
+                        batchParams.addValue("id", generateIDUsingSequence("gbs_sequence"));
+                        batchParams.addValue("policyId", p.getId());
+                        batchParams.addValue("policyInstanceSetId", policyInstanceSetId);
+                        batchParams.addValue("value", p.getValue());
+
+                        batch.add(batchParams);
+                    }
+                }
+                namedParameterJdbcTemplate.batchUpdate(INSERT_POLICY_INSTANCE_VALUES, batch.toArray(new MapSqlParameterSource[batch.size()]));
+            }
+
+            return policyInstanceSetId;
+        } catch (DataAccessException e) {
+            throw e;
+        }
+    }
+
+    protected void releaseResources(Connection jConnection, Statement stmt, ResultSet rst) {
+        // need to refactor and get rid of this.
+        /*if (rst != null) {
+            try {
+                rst.close();
+            } catch (SQLException e) {
+                logger.error(e);
+            }
+            rst = null;
+        }
+        if (stmt != null) {
+            try {
+                stmt.close();
+            } catch (SQLException e) {
+                logger.error(e);
+            }
+            stmt = null;
+        }
+        // This one keeps the Connection open til commit point in a transaction
+        DataSourceUtils.releaseConnection(jConnection, getDataSource());*/
+    }
+
 }

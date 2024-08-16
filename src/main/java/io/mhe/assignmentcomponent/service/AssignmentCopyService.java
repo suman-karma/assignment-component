@@ -175,7 +175,7 @@ public class AssignmentCopyService  implements IAssignmentCopyService{
         }
 
         long actNID = 0l;
-        logger.info(" adding activities... existingActivities {}", existingActivities);
+        logger.info(" adding activities existingActivities {}", existingActivities);
         if (existingActivities != null && existingActivities.length == 1) {
             if (logger.isDebugEnabled()) {
                 logger.debug("addAct = " + activity);
