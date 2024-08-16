@@ -6,6 +6,7 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Service
@@ -18,7 +19,10 @@ public interface IAssignmentCopyService {
                                long newCourseId,
                                long newSectionId,
                                HashMap modulesMap,
-                               Map assignMap) throws Exception ;
+                               Map assignMap, String coursePrimaryInstructorId,
+                               Map<Long, Long> oldAndNewCategories,
+                               Map<Long, Long> oldAndNewOutcomes,
+                               boolean isMarathon) throws Exception ;
 
     public void copyAssignmentsToNewSection(CopyAssignmentTO srcAssignment, long oldSectionID,
                                             long newSectionID,
@@ -27,7 +31,11 @@ public interface IAssignmentCopyService {
                                             long newCourseId,
                                             long newSectionId,
                                             HashMap modulesMap,
-                                            Map assignMap) throws Exception ;
+                                            Map assignMap,
+                                            String coursePrimaryInstructorId,
+                                            Map<Long, Long> oldAndNewCategories,
+                                            Map<Long, Long> oldAndNewOutcomes,
+                                            boolean isMarathon) throws Exception ;
 
 
     public boolean copyHMPublicAssignments(CopyAssignmentTO[] srcAssignmentIds,
@@ -70,6 +78,17 @@ public interface IAssignmentCopyService {
 
 
     public void copyModuleAssignmentMapping(Map<String, String> modulesMap, Map<String, String> assignmentsMap);
+
+    public void copyCategoryAndOutcomeMappingToMultipleAssignment(Map assignmentsMap,long currentSectionId,long destinationSectionId,Map<Long,Long>oldAndNewCategories, Map<Long,Long>oldAndNewOutcomes, long sourceCourseId, long destinationCourseId);
+
+    void copyMarathons(long oldSectionID, long newSectionId, long l, Map<Long, Long> sourceAndNewAssignmentMap);
+
+    List<Marathon> getMarathons(Long sectionId) throws Exception;
+
+    MarathonInfo getMarathonInfo(long marathonId, long sourceSectionid);
+
+    long createNewMarathon(MarathonInfo marathonInfo);
+
 
     /*
     public GroupAssignment getGroupAssignmentById(long assignmentId, long sectionId); // is this requried group assignmet import?

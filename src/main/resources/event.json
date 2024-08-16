@@ -1,0 +1,28 @@
+{
+  "srcAssignment": {
+    "assignmentId": 2148122255,
+    "newAssignmentId": 0,
+    "newPrimaryInstructorId": "117070",
+    "nativeAlaId": "13570164090672413",
+    "title": "Proctored_test",
+    "newTitle": "Proctored_test",
+    "courseId": 516184258,
+    "newCourseId": 516194522,
+    "sectionId": 516184259,
+    "newSectionId": 516194523,
+    "provider": "EZTestOnline",
+    "type": "ASSESMENT",
+    "weight": 10,
+    "assignmetnLineItemIds": [],
+    "parentAssignmentStatus": "publish"
+  },
+  "oldSectionID": 516184259,
+  "newSectionID": 516194523,
+  "newCourseId": 516194522,
+  "newSectionId": 516194523,
+  "modulesMap": {
+    "2154626680": "2154659050",
+    "2154626681": "2154659051"
+  },
+  "assignMap": {}
+}

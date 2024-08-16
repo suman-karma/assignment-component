@@ -14,6 +14,10 @@ public class CopyAssignmentEvent {
     private long newSectionId;
     private HashMap modulesMap;
     private Map assignMap;
+    private String coursePrimaryInstructorId ;
+    Map<Long, Long> oldAndNewCategories = new HashMap<Long, Long>();
+    Map<Long, Long> oldAndNewOutcomes = new HashMap<Long, Long>();
+    boolean isMarathon;
 
     public CopyAssignmentTO getSrcAssignment() {
         return srcAssignment;
@@ -87,6 +91,38 @@ public class CopyAssignmentEvent {
         this.assignMap = assignMap;
     }
 
+    public Map<Long, Long> getOldAndNewCategories() {
+        return oldAndNewCategories;
+    }
+
+    public void setOldAndNewCategories(Map<Long, Long> oldAndNewCategories) {
+        this.oldAndNewCategories = oldAndNewCategories;
+    }
+
+    public Map<Long, Long> getOldAndNewOutcomes() {
+        return oldAndNewOutcomes;
+    }
+
+    public void setOldAndNewOutcomes(Map<Long, Long> oldAndNewOutcomes) {
+        this.oldAndNewOutcomes = oldAndNewOutcomes;
+    }
+
+    public boolean isMarathon() {
+        return isMarathon;
+    }
+
+    public void setMarathon(boolean marathon) {
+        isMarathon = marathon;
+    }
+
+    public String getCoursePrimaryInstructorId() {
+        return coursePrimaryInstructorId;
+    }
+
+    public void setCoursePrimaryInstructorId(String coursePrimaryInstructorId) {
+        this.coursePrimaryInstructorId = coursePrimaryInstructorId;
+    }
+
     @Override
     public String toString() {
         return "CopyAssignmentEvent{" +
@@ -99,6 +135,10 @@ public class CopyAssignmentEvent {
                 ", newSectionId=" + newSectionId +
                 ", modulesMap=" + modulesMap +
                 ", assignMap=" + assignMap +
+                ", coursePrimaryInstructorId='" + coursePrimaryInstructorId + '\'' +
+                ", oldAndNewCategories=" + oldAndNewCategories +
+                ", oldAndNewOutcomes=" + oldAndNewOutcomes +
+                ", isMarathon=" + isMarathon +
                 '}';
     }
 }

@@ -47,4 +47,10 @@ public interface IAssignmentCopyDAO {
     public void copyModuleAssignmentMapping(Map<String, String> modulesMap,Map<String, String> assignmentsMap);
 
     public void copyAssignmentLineItemsForMultipleAssignments(CopyAssignmentTO[] copyAssignments) throws Exception;
+
+    List<Marathon> getMarathons(Long sectionId);
+
+    public MarathonInfo getMarathonInfo(Long marathonId, Long sectionId);
+
+    long createNewMarathon(MarathonInfo marathonInfo);
 }

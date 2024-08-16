@@ -75,6 +75,8 @@ public class TestController {
         Map assignMap = new HashMap();
         modulesMap.put("2154626681","2154659051");
         modulesMap.put("2154626680", "2154659050");
+        Map<Long, Long> oldAndNewCategories = new HashMap<Long, Long>();
+        Map<Long, Long> oldAndNewOutcomes = new HashMap<Long, Long>();
 
         String eventJson = "{\"srcAssignment\":{\"assignmentId\":2148122255,\"newAssignmentId\":0,\"newPrimaryInstructorId\":\"117070\",\"nativeAlaId\":\"13570164090672413\",\"title\":\"Proctored_test\",\"newTitle\":\"Proctored_test\",\"courseId\":516184258,\"newCourseId\":516194522,\"sectionId\":516184259,\"newSectionId\":516194523,\"provider\":\"EZTestOnline\",\"type\":\"ASSESMENT\",\"weight\":10.0,\"assignmetnLineItemIds\":[],\"parentAssignmentStatus\":\"publish\"},\"oldSectionID\":516184259,\"newSectionID\":516194523,\"newCourseId\":516194522,\"newSectionId\":516194523,\"modulesMap\":{\"2154626681\":\"2154659051\",\"2154626680\":\"2154659050\"},\"assignMap\":{}}";
 
@@ -86,6 +88,10 @@ public class TestController {
         //copyEvent.setNewSectionId(516194523l);
         copyEvent.setAssignMap(assignMap);
         copyEvent.setModulesMap(modulesMap);
+        copyEvent.setCoursePrimaryInstructorId("117070");
+        copyEvent.setOldAndNewCategories(oldAndNewCategories);
+        copyEvent.setOldAndNewOutcomes(oldAndNewOutcomes);
+        copyEvent.setMarathon(true);
 
         Gson gson = new Gson();
         logger.info("----------- copy enent -----------");
@@ -102,7 +108,11 @@ public class TestController {
                     copyEvent.getNewCourseId(),
                     copyEvent.getNewSectionID(),
                     copyEvent.getModulesMap(),
-                    copyEvent.getAssignMap());
+                    copyEvent.getAssignMap(),
+                    copyEvent.getCoursePrimaryInstructorId(),
+                    copyEvent.getOldAndNewCategories(),
+                    copyEvent.getOldAndNewOutcomes(),
+                    copyEvent.isMarathon());
 
         }catch(Exception e){
             logger.error("Exception while copying assignment ", e);

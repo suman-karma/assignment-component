@@ -1,11 +1,14 @@
 package io.mhe.assignmentcomponent.dao;
 
+import com.google.common.collect.HashBasedTable;
+import com.google.common.collect.Table;
 import io.mhe.assignmentcomponent.common.util.Utility;
 import io.mhe.assignmentcomponent.vo.*;
 import oracle.jdbc.OracleConnection;
 import oracle.sql.ARRAY;
 import oracle.sql.ArrayDescriptor;
 import org.apache.commons.lang.StringUtils;
+import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,6 +22,8 @@ import org.springframework.stereotype.Repository;
 
 import java.sql.Date;
 import java.sql.*;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -88,7 +93,13 @@ public class AssignmentCopyDAO implements IAssignmentCopyDAO{
             +
             " FROM ACTIVITY_ITEM AC LEFT OUTER JOIN  ACTIVITY_ITEM_EXTENDED_INFO ACEXTND ON ACEXTND.ACTIVITY_ITEM_ID = AC.ACTIVITY_ITEM_ID WHERE ac.ACTIVITY_ID= :ACTIVITY_ID ORDER BY ac.SEQUENCE_NO";
 
-// this method getAssignmentName is for testing will remove.
+    private static final StringBuilder GET_MARATHONS_FOR_SECTION = new StringBuilder(
+            "SELECT m.marathon_id,  m.marathon_title FROM marathon m,  marathon_section_xref mx "
+                    + " WHERE m.marathon_id = mx.marathon_id 	AND mx.section_Id   = :sectionId AND m.is_deleted ='N' order by m.marathon_id desc");
+
+
+
+    // this method getAssignmentName is for testing will remove.
     public String getAssignmentName(long id){
       String assignmentName = "";
       Map<String,String> paramMap = new HashMap<String,String>();
@@ -210,9 +221,6 @@ public class AssignmentCopyDAO implements IAssignmentCopyDAO{
         }catch (Exception ex) {
             logger.error("[ASSIGNMENT_DATE_UPDATE] Exception occurs in AssignmentListsDaoJdbc.copyHMPublicAssignments with exception:{} ", new Object[] {ex});
         }
-
-
-
       return true;
     }
 
@@ -993,6 +1001,260 @@ public class AssignmentCopyDAO implements IAssignmentCopyDAO{
         } finally {
             releaseResources(conn, ps2, rs1);
         }
+    }
+
+    @Override
+    public List<Marathon> getMarathons(Long sectionId) {
+
+        final List<Marathon> marathonList = new ArrayList<Marathon>();
+        Map<String, Object> paramMap = new HashMap<String, Object>();
+        paramMap.put("sectionId", sectionId);
+        try {
+            namedParameterJdbcTemplate.query(GET_MARATHONS_FOR_SECTION.toString(), paramMap,
+                    new ResultSetExtractor<String>() {
+                        @Override
+                        public String extractData(ResultSet rst) throws SQLException {
+                            while (rst.next()) {
+                                Marathon marathon = new Marathon();
+                                marathon.setMarathonId(rst.getLong("MARATHON_ID"));
+                                marathon.setMarathonTitle(rst.getString("MARATHON_TITLE"));
+
+                                marathonList.add(marathon);
+                            }
+                            return null;
+                        }
+                    });
+        } catch (Exception e) {
+            throw e;
+        }
+        return marathonList;
+    }
+
+    private static final StringBuilder GET_MARATHONSINFO_FOR_SECTION = new StringBuilder(
+            "	SELECT m.marathon_id,mx.section_id,m.marathon_title, m.notes,mx.is_editable, m.created_by, decode(m.updated_on,null,m.created_on,m.updated_on) update_date "
+                    + "	FROM marathon m,  marathon_section_xref mx	WHERE m.marathon_id = mx.marathon_id AND m.is_deleted = 'N' "
+                    + "	AND m.marathon_id   =:marathonId	AND mx.section_id   = :sectionId");
+
+
+    @Override
+    public MarathonInfo getMarathonInfo(Long marathonId, Long sectionId) {
+        final Long mId = marathonId;
+        final Long secId = sectionId;
+        Map<String, Object> paramMap = new HashMap<String, Object>();
+        paramMap.put("marathonId", marathonId);
+        paramMap.put("sectionId", sectionId);
+        try {
+            return namedParameterJdbcTemplate.query(GET_MARATHONSINFO_FOR_SECTION.toString(), paramMap,
+                    new ResultSetExtractor<MarathonInfo>() {
+                        @Override
+                        public MarathonInfo extractData(ResultSet rst) throws SQLException {
+                            MarathonInfo marathonInfo = null;
+                            while (rst.next()) {
+                                marathonInfo = new MarathonInfo();
+                                try {
+                                    marathonInfo.setBucketList(getBucketAssignmentInfo(mId, secId));
+                                } catch (Exception e) {
+                                    throw new RuntimeException(e);
+                                }
+                                marathonInfo.setMarathonId(rst.getLong("MARATHON_ID"));
+                                marathonInfo.setMarathonTitle(rst.getString("MARATHON_TITLE"));
+                                marathonInfo.setNotes(rst.getString("NOTES"));
+                                marathonInfo.setSectionId(rst.getLong("SECTION_ID"));
+                                marathonInfo.setIsEditable(rst.getString("IS_EDITABLE"));
+                                marathonInfo.setUserId(rst.getLong("CREATED_BY"));
+                                marathonInfo.setUpdatedDate(rst.getTimestamp("UPDATE_DATE"));
+                            }
+                            return marathonInfo;
+                        }
+                    });
+        } catch (Exception e) {
+            throw e;
+        }
+    }
+
+
+    private static final StringBuilder GET_BUCKET_ASSIGNMENT_FOR_MARATHON = new StringBuilder().append("SELECT ma.MARATHON_ID, \n")
+            .append("  ma.BUCKET_ID, \n").append("  ma.BUCKET_ORDER, \n").append("  ma.ASSIGNMENT_ID, \n")
+            .append("  ma.ASSIGNMENT_ORDER, \n").append("  ma.STATUS, \n").append("  ma.MIN_SCORE, \n").append("  ma.START_DATE, \n")
+            .append("  ma.DUE_DATE, \n").append("  ma.TITLE, \n").append("  ma.MANUAL_GRADE_REQUIRED, \n")
+            .append("  ma.ASSIGNMENT_TYPE, \n").append("  ma.CATEGORY_TYPE, \n").append("  ma.PROVIDER, \n")
+            .append("  IMG_ICON.CONSTANT_VALUE \n").append("FROM \n").append("  (SELECT mb.marathon_id, \n")
+            .append("    mb.bucket_id, \n").append("    mb.bucket_order, \n").append("    mba.assignment_id, \n")
+            .append("    mba.assignment_order, \n").append("    mba.status, \n").append("    mba.min_score, \n")
+            .append("    assn.start_date, \n").append("    assn.due_date, \n").append("    assn.title, \n")
+            .append("    DECODE(NVL(mgq.row_count,0), 0, 0, 1) manual_grade_required, \n").append("    assn.assignment_type, \n")
+            .append("    assn.category_type, \n").append("    assn.provider \n").append("  FROM marathon_bucket mb, \n")
+            .append("    marathon_bucket_assignment mba, \n").append("    assignment assn, \n")
+            .append("    section_assignment_xref sax, \n").append("    (SELECT act.assignment_id, \n")
+            .append("      COUNT(*) row_count \n").append("    FROM activity act, \n").append("      activity_item ai, \n")
+            .append("      activity_item_extended_info exinfo, \n").append("      section_assignment_xref sax1 \n")
+            .append("    WHERE act.activity_id   = ai.activity_id \n").append("    AND act.assignment_id   = sax1.assignment_id \n")
+            .append("    AND sax1.section_id     = :sectionId \n").append("    AND ai.activity_item_id = exinfo.activity_item_id \n")
+            .append("    AND exinfo.scoring      = 'manual' \n").append("    GROUP BY act.assignment_id \n").append("    ) mgq \n")
+            .append("  WHERE mb.marathon_id      = :marathonId \n").append("  AND mb.bucket_id          = mba.bucket_id \n")
+            .append("  AND assn.assignment_id    = mba.assignment_id \n").append("  AND sax.assignment_id     =mba.assignment_id \n")
+            .append("  AND sax.section_id        = :sectionId \n").append("  AND mb.is_deleted         = 'N' \n")
+            .append("  AND mba.is_deleted        = 'N' \n").append("  AND assn.is_deleted!      ='true' \n")
+            .append("  AND mgq.assignment_id (+) =assn.assignment_id \n")
+            .append("  ORDER BY mb.bucket_order, mba.assignment_order \n").append("  ) ma , \n").append("  (SELECT PRODUCT_TYPE, \n")
+            .append("    CONSTANT_VALUE \n").append("  FROM PRODUCT_CONSTANTS PC , \n").append("    PRODUCT_CONSTANT_VALUES PCV \n")
+            .append("  WHERE PC.id      = PCV.PRODUCT_CONSTANT_ID \n")
+            .append("  AND CONSTANT_KEY ='MARATHON_ASSIGNMENT_TYPE_ICON' \n")
+            .append("  AND FEATURE_TYPE ='MARATHON_ASSIGNMENT_TYPE_ICON' \n").append("  ) IMG_ICON \n")
+            .append("WHERE MA.ASSIGNMENT_TYPE=IMG_ICON.PRODUCT_TYPE(+) \n").append("ORDER BY ma.bucket_order, ma.assignment_order");
+
+    private List<MarathonBucket> getBucketAssignmentInfo(Long marathonId, Long sectionId) throws Exception {
+
+        final List<MarathonBucket> marathonBucketList = new ArrayList<MarathonBucket>();
+        Map<String, Long> paramMap = new HashMap<String, Long>();
+        paramMap.put("marathonId", marathonId);
+        paramMap.put("sectionId", sectionId);
+
+        final Table<Long, String, java.util.Date> policyStartDueDates = getPolicyStartDueDates(sectionId);
+
+        try {
+            namedParameterJdbcTemplate.query(GET_BUCKET_ASSIGNMENT_FOR_MARATHON.toString(), paramMap,
+                    new ResultSetExtractor<String>() {
+                        @Override
+                        public String extractData(ResultSet rst) throws SQLException {
+                            long prevBucketID = 0l;
+                            MarathonBucket mBucket = null;
+                            List<MarathonBucketAssignment> marathonBucketAssignmentList = null;
+                            while (rst.next()) {
+                                if (prevBucketID != rst.getLong("BUCKET_ID")) {
+                                    if (mBucket != null) {
+                                        marathonBucketList.add(mBucket);
+                                    }
+                                    marathonBucketAssignmentList = new ArrayList<MarathonBucketAssignment>();
+                                    mBucket = new MarathonBucket();
+                                    mBucket.setBucketId(rst.getLong("BUCKET_ID"));
+                                    mBucket.setOrder(rst.getLong("BUCKET_ORDER"));
+                                }
+                                MarathonBucketAssignment mAssignment = new MarathonBucketAssignment();
+                                mAssignment.setAssignmentId(rst.getLong("ASSIGNMENT_ID"));
+                                mAssignment.setAssignmentOrder(rst.getLong("ASSIGNMENT_ORDER"));
+                                mAssignment.setMinScore(rst.getFloat("MIN_SCORE"));
+                                mAssignment.setStatus(rst.getString("status"));
+
+                                mAssignment.setStartDate(retrieveAssignmentStartDate(mAssignment.getAssignmentId(), rst,
+                                        policyStartDueDates));
+                                mAssignment.setDueDate(retrieveAssignmentDueDate(mAssignment.getAssignmentId(), rst,
+                                        policyStartDueDates));
+
+                                mAssignment.setTitle(rst.getString("title"));
+                                mAssignment.setCategoryType(rst.getString("category_type"));
+                                mAssignment.setProviderType(rst.getString("provider"));
+                                mAssignment.setAssignmentTypeIconClass(rst.getString("CONSTANT_VALUE"));
+                                mAssignment.setAssignmentType(rst.getString("ASSIGNMENT_TYPE"));
+                                marathonBucketAssignmentList.add(mAssignment);
+                                mBucket.setMarathonAssignmentList(marathonBucketAssignmentList);
+                                prevBucketID = rst.getLong("BUCKET_ID");
+                            }
+                            if (mBucket != null) {
+                                marathonBucketList.add(mBucket);
+                            }
+                            return null;
+                        }
+                    });
+
+        }
+
+        catch (Exception e) {
+            throw e;
+        }
+        return marathonBucketList;
+    }
+
+    private static final String START_DATE_DB_MARKER = "p_startdate";
+    private static final String DUE_DATE_DB_MARKER = "p_duedate";
+
+    private java.util.Date retrieveAssignmentStartDate(final long assignmentID, final ResultSet rs, final Table<Long, String, java.util.Date> policyDates)
+            throws SQLException {
+        return retrieveAssignmentDate(assignmentID, rs, policyDates, "START_DATE", START_DATE_DB_MARKER);
+    }
+
+    private java.util.Date retrieveAssignmentDueDate(final long assignmentID, final ResultSet rs, final Table<Long, String, java.util.Date> policyDates)
+            throws SQLException {
+        return retrieveAssignmentDate(assignmentID, rs, policyDates, "DUE_DATE", DUE_DATE_DB_MARKER);
+    }
+
+    private java.util.Date retrieveAssignmentDate(final long assignmentID, final ResultSet rs, final Table<Long, String, java.util.Date> policyDates,
+                                                  final String columnName, final String marker) throws SQLException {
+
+        java.util.Date date = policyDates.get(assignmentID, marker);
+        if (date == null) {
+            date = getTimestamp(rs, columnName);
+        }
+        final DateTime dateTime = new DateTime(date);
+        if (dateTime.getYear() < 2000) {
+            date = null;
+        }
+        return date;
+    }
+
+    public static final String DB_TIMEZONE_ID = "US/Eastern";
+    public static java.sql.Timestamp getTimestamp(ResultSet resultSet, String columnName) throws SQLException {
+        GregorianCalendar calendar = new GregorianCalendar(TimeZone.getTimeZone(DB_TIMEZONE_ID));
+        return resultSet.getTimestamp(columnName, calendar);
+    }
+
+    private ThreadLocal<SimpleDateFormat> dateFormat = new ThreadLocal<SimpleDateFormat>() {
+        @Override
+        protected SimpleDateFormat initialValue() {
+            return new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        }
+    };
+
+    private static final String GET_POLICY_START_DUE_DATES_FOR_SECTION = "SELECT ali.assignment_id,\n" + "          pi.value,\n"
+            + "          p.exchane_key\n" + "   FROM assignment_line_item ali,\n" + "        sec_line_item_policy_instance spi,\n"
+            + "        policy_instance pi,\n" + "        policy p\n" + "   WHERE ali.id = spi.assign_line_item_id\n"
+            + "     AND spi.policy_instance_set_id = pi.policy_instance_set_id\n" + "     AND ali.draft_no = 0\n"
+            + "     AND spi.section_id = :sectionID\n" + "     AND pi.policy_id = p.id\n"
+            + "     AND p.exchane_key IN('p_startdate','p_duedate')\n" + "   UNION SELECT apx.assignment_id,\n"
+            + "                apx.value,\n" + "                p.exchane_key\n" + "   FROM assignment_policy_xref apx,\n"
+            + "        policy p\n" + "   WHERE section_id = :sectionID\n" + "     AND apx.policy_id =p.id\n"
+            + "     AND p.exchane_key IN('p_startdate','p_duedate')";
+
+
+    private Table<Long, String, java.util.Date> getPolicyStartDueDates(final long sectionID) {
+        final Map<String, Object> paramMap = new HashMap<String, Object>(1);
+        paramMap.put("sectionID", sectionID);
+
+        final Table<Long, String, java.util.Date> result = HashBasedTable.create();
+
+        try {
+            namedParameterJdbcTemplate.query(GET_POLICY_START_DUE_DATES_FOR_SECTION, paramMap,
+                    new ResultSetExtractor<Void>() {
+
+                        @Override
+                        public Void extractData(ResultSet rs) throws SQLException, DataAccessException {
+                            while (rs.next()) {
+                                final long assignmentID = rs.getLong("ASSIGNMENT_ID");
+                                final String marker = rs.getString("EXCHANE_KEY");
+                                java.util.Date date = null;
+                                try {
+                                    // TODO :
+                                    date = dateFormat.get().parse(rs.getString("VALUE"));
+                                } catch (ParseException e1) {
+                                    logger.warn(String.format("Error during parsing %s for assignment %d"), marker, assignmentID);
+                                }
+                                if (date != null) {
+                                    result.put(assignmentID, marker, date);
+                                }
+                            }
+                            return null;
+                        }
+                    });
+        } catch (final Exception e) {
+
+            throw e;
+        }
+        return result;
+    }
+
+    @Override
+    public long createNewMarathon(MarathonInfo marathonInfo) {
+        return 0;
     }
 
     public AssignmentLineItem[] getAssignmentLineItemsForAssignment(long assignmentId, long sectionId)

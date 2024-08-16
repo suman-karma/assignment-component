@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 
 @Service("ASSESMENT")
@@ -30,7 +31,11 @@ public class EztAssignmentCopyService extends AssignmentCopyService{
                                             long newCourseId,
                                             long newSectionId,
                                             HashMap modulesMap,
-                                            Map assignMap) throws Exception {
+                                            Map assignMap,
+                                            String coursePrimaryInstructorId,
+                                            Map<Long, Long> oldAndNewCategories,
+                                            Map<Long, Long> oldAndNewOutcomes,
+                                            boolean isMarathon) throws Exception {
         try {
             logger.error("####################### in copyAssignmentsToNewSection srcAssignment {}",srcAssignment);
             this.copyHMPublicAssignments(new CopyAssignmentTO[] { srcAssignment }, oldSectionID, newSectionID,
@@ -83,10 +88,30 @@ public class EztAssignmentCopyService extends AssignmentCopyService{
             // ezt
             iIntegrationRestService.pullRegistrationMultiple( new AssignmentTO(srcAssignment.getAssignmentId(),srcAssignment.getNativeAlaId()));
 
+            // all
             assignMap.put("" + srcAssignment.getAssignmentId(), "" + srcAssignment.getNewAssignmentId());
             logger.info("####### modulesMap {}", modulesMap);
             logger.info("####### assignMap {}", assignMap);
             this.copyModuleAssignmentMapping(modulesMap, assignMap);
+
+            // other updates
+            try {
+                this.copyCategoryAndOutcomeMappingToMultipleAssignment(assignMap, oldSectionID, newSectionId,
+                        oldAndNewCategories, oldAndNewOutcomes, srcAssignment.getCourseId(),srcAssignment.getNewCourseId()); // this to be completed
+            } catch (Exception ex) {
+                logger.error("[copyCourse] Error with copyCategoryAndOutcomeMappingToMultipleAssignment: ", ex);
+                throw ex;
+            }
+
+            if (isMarathon) {
+                Map<Long, Long> sourceAndNewAssignmentMap = new HashMap<Long, Long>();
+                Iterator<Map.Entry<String, String>> it = assignMap.entrySet().iterator();
+                while (it.hasNext()) {
+                    Map.Entry<String, String> e = (Map.Entry<String, String>) it.next();
+                    sourceAndNewAssignmentMap.put(Long.parseLong(e.getKey()), Long.parseLong(e.getValue()));
+                }
+                this.copyMarathons(oldSectionID, newSectionId, Long.parseLong(coursePrimaryInstructorId),sourceAndNewAssignmentMap);
+            }
 
             logger.error("####################### in copyAssignmentsToNewSection completed");
         } catch (Exception e) {

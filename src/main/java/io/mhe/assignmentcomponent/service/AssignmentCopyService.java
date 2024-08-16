@@ -9,11 +9,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
-import java.util.Arrays;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 @Service
 public class AssignmentCopyService  implements IAssignmentCopyService{
@@ -31,7 +29,7 @@ public class AssignmentCopyService  implements IAssignmentCopyService{
 
 
     @Override
-    public void copyAssignment(CopyAssignmentTO srcAssignment, long oldSectionID, long newSectionID, long[] origCategoryIds, long[] newCategoryIds, long newCourseId, long newSectionId, HashMap modulesMap, Map assignMap) throws Exception {
+    public void copyAssignment(CopyAssignmentTO srcAssignment, long oldSectionID, long newSectionID, long[] origCategoryIds, long[] newCategoryIds, long newCourseId, long newSectionId, HashMap modulesMap, Map assignMap, String coursePrimaryInstructorId, Map<Long, Long> oldAndNewCategories, Map<Long, Long> oldAndNewOutcomes, boolean isMarathon) throws Exception {
         logger.error("*************** copyAssignment ");
         this.copyAssignmentsToNewSection(srcAssignment,  oldSectionID,
                 newSectionID,
@@ -40,7 +38,11 @@ public class AssignmentCopyService  implements IAssignmentCopyService{
                 newCourseId,
                 newSectionId,
                 modulesMap,
-                assignMap);
+                assignMap,
+                coursePrimaryInstructorId,
+                oldAndNewCategories,
+                oldAndNewOutcomes,
+                isMarathon);
     }
 
     public void copyAssignmentsToNewSection(
@@ -51,7 +53,7 @@ public class AssignmentCopyService  implements IAssignmentCopyService{
                                             long newCourseId,
                                             long newSectionId,
                                             HashMap modulesMap,
-                                            Map assignMap) throws Exception {}
+                                            Map assignMap, String coursePrimaryInstructorId, Map<Long, Long> oldAndNewCategories, Map<Long, Long> oldAndNewOutcomes, boolean isMarathon) throws Exception {}
 
     public boolean copyHMPublicAssignments(CopyAssignmentTO[] srcAssignments, long srcSectionId, long dstSectionId, long[] oldCategoryIds,
                                            long[] newCategoryIds,
@@ -235,71 +237,121 @@ public class AssignmentCopyService  implements IAssignmentCopyService{
         assignmentCopyDAO.copyModuleAssignmentMapping(modulesMap, assignmentsMap);
     }
 
+    public void copyCategoryAndOutcomeMappingToMultipleAssignment(Map assignmentsMap, long currentSectionId, long destinationSectionId,
+                                                                  Map<Long, Long> oldAndNewCategories, Map<Long, Long> oldAndNewOutcomes, long sourceCourseId, long destinationCourseId ) {
+        if(currentSectionId == 0l || destinationSectionId == 0l || assignmentsMap == null || oldAndNewCategories == null || oldAndNewOutcomes == null){
+            throw new UnsupportedOperationException("This API should be used only for OBA" );
+        }
+        Map <String, String>assignMap = assignmentsMap;
 
-/*
+        /*if (oldAndNewCategories.size() == 0) {
 
+            for (Map.Entry<String, String> map : assignMap.entrySet()) {
+                long oldAssignmentId = Long.parseLong(map.getKey());
+                long newAssignmentId = Long.parseLong(map.getValue());
+                if (sourceCourseId == destinationCourseId) {
+                    CourseLearningOutcomes courseLearningOutcomes = this
+                            .reviewRubricForAssignment(oldAssignmentId,
+                                    currentSectionId);
+                    if (courseLearningOutcomes
+                            .getLearningOutcomeCategoryList().size() > 0) {
 
+                        this.createRubricForAssignment(newAssignmentId,
+                                destinationSectionId,
+                                courseLearningOutcomes);
+                    }
+                }else{
+                    learnOutcomeDao.updateLearningOutcomePolicy(newAssignmentId,destinationSectionId,"false");
+                }
+            }
 
+        } else {
+            for (Map.Entry<String, String> map : assignMap.entrySet()) {
+                long oldAssignmentId = Long.parseLong(map.getKey());
+                long newAssignmentId = Long.parseLong(map.getValue());
+                CourseLearningOutcomes courseLearningOutcomes = this
+                        .reviewRubricForAssignment(oldAssignmentId,
+                                currentSectionId);
+                if (courseLearningOutcomes.getLearningOutcomeCategoryList()
+                        .size() > 0) {
+                    for (LearningOutcomeCategory categoryObj : courseLearningOutcomes
+                            .getLearningOutcomeCategoryList()) {
+                        long categoryId = categoryObj.getCategoryId();
+                        if(oldAndNewCategories.get(categoryId)!=null)
+                        {
+                            categoryObj.setCategoryId(oldAndNewCategories
+                                    .get(categoryId));
+                        }
+                        for (LearningOutcome outcomeObj : categoryObj
+                                .getOutcomeList()) {
+                            long outcomeId = outcomeObj.getOutcomeId();
+                            if(oldAndNewOutcomes.get(outcomeId)!=null)
+                            {
+                                outcomeObj.setOutcomeId(oldAndNewOutcomes
+                                        .get(outcomeId));
+                            }
+                        }
+                    }
 
-    @Override
-    public ActivityItem[] getActivityItemsByAssignmentId(long assignmentId) {
-        return assignmentCopyDAO.getActivityItemsByAssignmentId(assignmentId);
+                    this.createRubricForAssignment(newAssignmentId,
+                            destinationSectionId, courseLearningOutcomes);
+                }
+            }
+        }*/
+
     }
 
-
-
     @Override
-    public void addActivityAndALAInfoForAssignment(Assignment assignmentObj) {
-        Activity activity = AssignmentUtility.prepareActivityWithActivityItems(assignmentObj);
-        boolean flag = false;
-        ProductTemplate productTemplate = null;
+    public void copyMarathons(long sourceSectionid, long newSectionId, long userID, Map<Long, Long> assignmentIDs) {
+        final List<Marathon> marathons;
         try {
-            Product product = this.getProduct(assignmentObj.getType().getValue());
-            if (product != null)
-            {
-                productTemplate = product.getProductTemplate();
-            }
+            marathons = this.getMarathons(sourceSectionid);
         } catch (Exception e) {
-            logger.error("exception in addActivityAndALAInfoForAssignment" + e);
+            throw new RuntimeException(e);
         }
-        logger.debug("addActivityAndALAInfoForAssignment assignmentObj.getType()"+assignmentObj.getType()+" Product type: "+  productTemplate);
-        // Have Removed Check for LabSmat/LearnSmart and other assignment types which are configured through Products
-        // table and making the check at template level
-        if (AssignmentType.VIDEO.equals(assignmentObj.getType()) || AssignmentType.ALE.equals(assignmentObj.getType())
-                || AssignmentType.URLBased.equals(assignmentObj.getType())
-                || AssignmentType.FILEATTACH.equals(assignmentObj.getType())
-                || AssignmentType.GROUP.equals(assignmentObj.getType())
-                || AssignmentType.WRITING.equals(assignmentObj.getType())
-                || AssignmentType.BLOG.equals(assignmentObj.getType())
-                || AssignmentType.MUZZY_LANE.equals(assignmentObj.getType())
-                || AssignmentType.DISCUSSION.equals(assignmentObj.getType())
-                || ProductVariables.PROVIDER_GENERIC.equals(assignmentObj.getProvider())
-                || (StringUtils.isNotEmpty(assignmentObj.getNativeAlaId())
-                && assignmentObj.getNativeAlaId().startsWith(ProductVariables.PROVIDER_GENERIC))
-                || (ProductTemplate.BASIC.equals(productTemplate) || ProductTemplate.ADVANCED.equals(productTemplate)
-                || ProductTemplate.DEFAULT.equals(productTemplate))) {
-
-            try {
-                flag = addActivitiesAndItemsForAssignment(activity, assignmentObj.getID());
-            } catch (Exception e) {
-                throw new RuntimeException(e);
+        if (!CollectionUtils.isEmpty(marathons)) {
+            Collections.reverse(marathons);
+            for (final Marathon marathon : marathons) {
+                final MarathonInfo marathonInfo = this.getMarathonInfo(marathon.getMarathonId(), sourceSectionid);
+                prepareMarathonToCopy(marathonInfo, newSectionId, userID, assignmentIDs);
+                long newMarathonID = this.createNewMarathon(marathonInfo);
             }
-
-            // writing to SQS start
-            long sectionID = assignmentObj.getCurrentSectionId();
-            //method parameters - long assignmentId, long sectionId, long studentId, String transactionType, int attemptNo, String source
-            try {
-                amazonSQSHelper.writeToSQSQueue(assignmentObj.getID(), sectionID, 0,
-                        AmazonSQSConstants.ACTIVITY_TYPE_SKILL_CATEGORY, 0,
-                        "AlaManagerBusinessService -> addActivityAndALAInfoForAssignment()", null);
-            } catch(Exception e) {
-                logger.error("Error in writing to Amazon SQS inside addActivityAndALAInfoForAssignment", e);
-            }
-            // writing to SQS done
-
         }
-       // void?? return flag;
     }
-     */
+
+    @Override
+    public List<Marathon> getMarathons(Long sectionId) throws Exception {
+        return assignmentCopyDAO.getMarathons(sectionId);
+    }
+
+    @Override
+    public MarathonInfo getMarathonInfo(long marathonId, long sourceSectionid) {
+        return assignmentCopyDAO.getMarathonInfo(marathonId,sourceSectionid);
+    }
+
+    @Override
+    public long createNewMarathon(MarathonInfo marathonInfo) {
+        return assignmentCopyDAO.createNewMarathon(marathonInfo);
+    }
+
+    private void prepareMarathonToCopy(final MarathonInfo marathonInfo, final long newSectionID, final long userID,
+                                       final Map<Long, Long> assignmentMap) {
+        marathonInfo.setUserId(userID);
+        marathonInfo.setSectionId(newSectionID);
+
+        for (MarathonBucket bucket : marathonInfo.getBucketList()) {
+            Iterator<MarathonBucketAssignment> itr = bucket.getMarathonAssignmentList().iterator();
+            while (itr.hasNext()) {
+                MarathonBucketAssignment marathonAssignment = itr.next();
+                long sourceAssignmentId = marathonAssignment.getAssignmentId();
+                if (assignmentMap.containsKey(sourceAssignmentId)) {
+                    marathonAssignment.setAssignmentId(assignmentMap.get(sourceAssignmentId));
+                } else {
+                    itr.remove();
+                }
+            }
+        }
+    }
+
 
 }
