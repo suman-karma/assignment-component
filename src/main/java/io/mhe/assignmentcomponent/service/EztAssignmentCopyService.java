@@ -97,7 +97,7 @@ public class EztAssignmentCopyService extends AssignmentCopyService{
             // other updates
             try {
                 this.copyCategoryAndOutcomeMappingToMultipleAssignment(assignMap, oldSectionID, newSectionId,
-                        oldAndNewCategories, oldAndNewOutcomes, srcAssignment.getCourseId(),srcAssignment.getNewCourseId()); // this to be completed
+                        oldAndNewCategories, oldAndNewOutcomes, srcAssignment.getCourseId(),srcAssignment.getNewCourseId()); // this to be completed huge dependicies.
             } catch (Exception ex) {
                 logger.error("[copyCourse] Error with copyCategoryAndOutcomeMappingToMultipleAssignment: ", ex);
                 throw ex;

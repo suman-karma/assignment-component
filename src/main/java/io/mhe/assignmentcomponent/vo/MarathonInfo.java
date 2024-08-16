@@ -1,7 +1,9 @@
 package io.mhe.assignmentcomponent.vo;
 
-import com.mhe.connect.business.marathon.common.IMarathonVisitor;
-import com.mhe.connect.common.Visitable;
+
+
+import io.mhe.assignmentcomponent.common.IMarathonVisitor;
+import io.mhe.assignmentcomponent.common.constant.Visitable;
 
 import java.util.Date;
 import java.util.List;

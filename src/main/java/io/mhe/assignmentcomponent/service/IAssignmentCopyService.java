@@ -89,6 +89,9 @@ public interface IAssignmentCopyService {
 
     long createNewMarathon(MarathonInfo marathonInfo);
 
+    public void createRubricForAssignment(long assignmentId, long sectionId, CourseLearningOutcomes courseLearningOutcomes) throws Exception;
+
+    public CourseLearningOutcomes reviewRubricForAssignment(long assignmentId, long sectionId) ;
 
     /*
     public GroupAssignment getGroupAssignmentById(long assignmentId, long sectionId); // is this requried group assignmet import?

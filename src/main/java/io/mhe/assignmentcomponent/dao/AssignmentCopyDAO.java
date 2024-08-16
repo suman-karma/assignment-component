@@ -1252,6 +1252,115 @@ public class AssignmentCopyDAO implements IAssignmentCopyDAO{
         return result;
     }
 
+    private static final String	INSERT_INTO_ASSIGN_RUBRIC_CATEGORY_XREF			= "insert into assign_rubric_category_xref (assignment_id,category_weight,is_deleted,rubric_category_id,id) values(:assignment_id,:category_weight,:is_deleted,:rubric_category_id,:id) ";
+
+    private static final String	INSERT_INTO_ASSIGNMENT_RUBRIC_OUTCOME_XREF		= "insert into assignment_rubric_outcome_xref (outcome_id,is_deleted,rubric_category_xref_id) values(:outcome_id,:is_deleted,:rubric_category_xref_id) ";
+
+    private static final String	UPDATE_ASSIGNMENT_RUBRIC_OUTCOME_XREF			= "update assignment_rubric_outcome_xref set IS_DELETED = 'true' where RUBRIC_CATEGORY_XREF_ID in (select ID from assign_rubric_category_xref where ASSIGNMENT_ID = :assignmentId )";
+
+    private static final String	UPDATE_ASSIGN_RUBRIC_CATEGORY_XREF				= "update assign_rubric_category_xref set IS_DELETED = 'true' where ASSIGNMENT_ID = :assignmentId ";
+
+    private static final String	GET_CATEGORIES_BY_ASSIGNMENT_ID					= "SELECT t1.rubric_category_id,t1.category_weight,t3.name AS category_name,t3.ordering_id as category_ordering_id,"
+            + " t2.outcome_id,t4.name AS outcome_name,t4.ordering_id as outcome_ordering_id,t5.id as rating_id,t5.rating_score, t5.name as rating_name,(select rating_description from learn_obj_rating_description "
+            + " where rating_id = t5.id and learning_objective_id = t2.outcome_id AND IS_DELETED='false') rating_description FROM assign_rubric_category_xref t1,"
+            + " assignment_rubric_outcome_xref t2,rubric_category t3,rubric_learning_objective t4,rubric_rating t5 WHERE t1.id= "
+            + " t2.RUBRIC_CATEGORY_XREF_ID and t3.rubric_id = t5.rubric_id AND t1.RUBRIC_CATEGORY_ID = t3.id AND t2.OUTCOME_ID= t4.id AND "
+            + " t1.ASSIGNMENT_ID = :assignmentId AND t1.IS_DELETED= 'false' AND t2.IS_DELETED='false' AND t5.IS_DELETED='false' ORDER BY t3.ordering_id,t4.ordering_id,"
+            + " t5.rating_score";
+
+
+    public void createRubricForAssignment(long assignmentId, CourseLearningOutcomes courseLearningOutcomes)throws Exception {
+        this.updateRubricForAssignment(assignmentId);
+
+        List<MapSqlParameterSource> batchBuckets = new ArrayList<MapSqlParameterSource>();
+        for (LearningOutcomeCategory categoryObj : courseLearningOutcomes
+                .getLearningOutcomeCategoryList()) {
+            MapSqlParameterSource categoryBucket = new MapSqlParameterSource();
+            long categoryXrefId = generateIDUsingSequence(SEQUENCE_NAME);
+            categoryObj.setAssignRubricCategoryXrefId(categoryXrefId);
+            categoryBucket.addValue("assignment_id", assignmentId);
+            categoryBucket.addValue("category_weight", categoryObj.getCategoryWeight());
+            categoryBucket.addValue("is_deleted", "false");
+            categoryBucket.addValue("rubric_category_id", categoryObj.getCategoryId());
+            categoryBucket.addValue("id", categoryXrefId);
+            batchBuckets.add(categoryBucket);
+        }
+        namedParameterJdbcTemplate.batchUpdate(
+                INSERT_INTO_ASSIGN_RUBRIC_CATEGORY_XREF, batchBuckets.toArray(new MapSqlParameterSource[batchBuckets.size()]));
+
+        batchBuckets = new ArrayList<MapSqlParameterSource>();
+        for (LearningOutcomeCategory categoryObject : courseLearningOutcomes
+                .getLearningOutcomeCategoryList()) {
+            for (LearningOutcome outcomeObj : categoryObject.getOutcomeList()) {
+                MapSqlParameterSource outcomeBucket = new MapSqlParameterSource();
+                outcomeBucket.addValue("outcome_id", outcomeObj.getOutcomeId());
+                outcomeBucket.addValue("is_deleted", "false");
+                outcomeBucket.addValue("rubric_category_xref_id", categoryObject.getAssignRubricCategoryXrefId());
+                batchBuckets.add(outcomeBucket);
+            }
+        }
+        namedParameterJdbcTemplate.batchUpdate(
+                INSERT_INTO_ASSIGNMENT_RUBRIC_OUTCOME_XREF, batchBuckets.toArray(new MapSqlParameterSource[batchBuckets.size()]));
+
+    }
+
+    public void updateRubricForAssignment(long assignmentId) {
+        Map<String, Object> paramMap = new HashMap<String, Object>();
+        paramMap.put("assignmentId", assignmentId);
+        execute(paramMap, UPDATE_ASSIGNMENT_RUBRIC_OUTCOME_XREF, UPDATE_ASSIGN_RUBRIC_CATEGORY_XREF);
+    }
+
+    private void execute(Map<String, Object> paramMap, String... sqls) {
+        for (String sql : sqls) {
+            namedParameterJdbcTemplate.update(sql, paramMap);
+        }
+    }
+
+    public CourseLearningOutcomes reviewRubricForAssignment(long assignmentId) {
+
+        Map<String, Object> paramMap = new HashMap<String, Object>();
+        paramMap.put("assignmentId", assignmentId);
+        return namedParameterJdbcTemplate.query(GET_CATEGORIES_BY_ASSIGNMENT_ID, paramMap,
+                new ResultSetExtractor<CourseLearningOutcomes>() {
+                    public CourseLearningOutcomes extractData(ResultSet rst) throws SQLException {
+                        long previousCategoryId = 0l, currentCategoryId = 0l, previousOutcomeId = 0l, currentOutcomeId = 0l;
+                        CourseLearningOutcomes courseLearningOutcomes = new CourseLearningOutcomes();
+                        List<LearningOutcomeCategory> learningOutcomeCategoryList = new ArrayList<LearningOutcomeCategory>();
+                        LearningOutcomeCategory learningOutcomeCategoryObject = null;
+                        LearningOutcome learningOutcomeObject = null;
+                        while (rst.next()) {
+                            currentCategoryId = rst.getLong("rubric_category_id");
+                            if (previousCategoryId != currentCategoryId) {
+                                learningOutcomeCategoryObject = new LearningOutcomeCategory();
+                                learningOutcomeCategoryObject.setCategoryId(currentCategoryId);
+                                learningOutcomeCategoryObject.setCategoryName(rst.getString("category_name"));
+                                learningOutcomeCategoryObject.setCategoryWeight(rst.getInt("category_weight"));
+                                learningOutcomeCategoryObject.setCategoryOrderingId(rst.getInt("category_ordering_id"));
+                                learningOutcomeCategoryList.add(learningOutcomeCategoryObject);
+                                previousCategoryId = currentCategoryId;
+                            }
+                            currentOutcomeId = rst.getLong("outcome_id");
+                            if (previousOutcomeId != currentOutcomeId) {
+                                learningOutcomeObject = new LearningOutcome();
+                                learningOutcomeObject.setOutcomeId(currentOutcomeId);
+                                learningOutcomeObject.setOutcomeName(rst.getString("outcome_name"));
+                                learningOutcomeObject.setOutcomeOrderingId(rst.getInt("outcome_ordering_id"));
+                                learningOutcomeCategoryObject.getOutcomeList().add(learningOutcomeObject);
+                                previousOutcomeId = currentOutcomeId;
+                            }
+                            LearningOutcomeRatingAndDescription outcomeDiscriptionObject = new LearningOutcomeRatingAndDescription();
+                            outcomeDiscriptionObject.setRatingId(rst.getLong("rating_id"));
+                            outcomeDiscriptionObject.setRatingScore(rst.getInt("rating_score"));
+                            outcomeDiscriptionObject.setRatingName(rst.getString("rating_name"));
+                            outcomeDiscriptionObject.setRatingDescription(rst.getString("rating_description"));
+                            learningOutcomeObject.getRatingDescriptionList().add(outcomeDiscriptionObject);
+                        }
+                        courseLearningOutcomes.setLearningOutcomeCategoryList(learningOutcomeCategoryList);
+                        return courseLearningOutcomes;
+                    }
+                });
+    }
+
     @Override
     public long createNewMarathon(MarathonInfo marathonInfo) {
         return 0;
@@ -1369,6 +1478,17 @@ public class AssignmentCopyDAO implements IAssignmentCopyDAO{
     private long copyPolicyInstanceSet(long policyInstanceSetId) throws Exception {
         PolicyInstanceSet policyInstanceSet = this.getPolicyInstanceSetWithPolicies(policyInstanceSetId);
         return this.createPolicyInstanceSet(policyInstanceSet);
+
+    }
+
+    private static final String	UPDATE_LEARNING_OUTCOME_POLILCY					= "update policy_instance set value = :policyValue where policy_instance_set_id in (select policy_instance_set_id from sec_line_item_policy_instance where assign_line_item_id in (select id from assignment_line_item where assignment_id = :assignmentId) and section_id =:sectionId) and policy_id in (select id from policy where exchane_key = 'p_learningOutcomes')";
+
+    public void updateLearningOutcomePolicy(long assignmentId, long sectionId, String policyValue) {
+        Map<String, Object> paramMap = new HashMap<String, Object>();
+        paramMap.put("policyValue", policyValue);
+        paramMap.put("assignmentId", assignmentId);
+        paramMap.put("sectionId", sectionId);
+        namedParameterJdbcTemplate.update(UPDATE_LEARNING_OUTCOME_POLILCY, paramMap);
 
     }
 

@@ -1,8 +1,10 @@
 package io.mhe.assignmentcomponent.vo;
 
-import com.mhe.connect.business.marathon.common.IMarathonVisitor;
-import com.mhe.connect.common.Visitable;
-import org.apache.commons.collections.CollectionUtils;
+
+
+import io.mhe.assignmentcomponent.common.IMarathonVisitor;
+import io.mhe.assignmentcomponent.common.constant.Visitable;
+import org.springframework.util.CollectionUtils;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -244,7 +244,7 @@ public class AssignmentCopyService  implements IAssignmentCopyService{
         }
         Map <String, String>assignMap = assignmentsMap;
 
-        /*if (oldAndNewCategories.size() == 0) {
+        if (oldAndNewCategories.size() == 0) {
 
             for (Map.Entry<String, String> map : assignMap.entrySet()) {
                 long oldAssignmentId = Long.parseLong(map.getKey());
@@ -256,12 +256,16 @@ public class AssignmentCopyService  implements IAssignmentCopyService{
                     if (courseLearningOutcomes
                             .getLearningOutcomeCategoryList().size() > 0) {
 
-                        this.createRubricForAssignment(newAssignmentId,
-                                destinationSectionId,
-                                courseLearningOutcomes);
+                        try {
+                            this.createRubricForAssignment(newAssignmentId,
+                                    destinationSectionId,
+                                    courseLearningOutcomes);
+                        } catch (Exception e) {
+                            throw new RuntimeException(e);
+                        }
                     }
                 }else{
-                    learnOutcomeDao.updateLearningOutcomePolicy(newAssignmentId,destinationSectionId,"false");
+                    assignmentCopyDAO.updateLearningOutcomePolicy(newAssignmentId,destinationSectionId,"false");
                 }
             }
 
@@ -293,11 +297,15 @@ public class AssignmentCopyService  implements IAssignmentCopyService{
                         }
                     }
 
-                    this.createRubricForAssignment(newAssignmentId,
-                            destinationSectionId, courseLearningOutcomes);
+                    try {
+                        this.createRubricForAssignment(newAssignmentId,
+                                destinationSectionId, courseLearningOutcomes);
+                    } catch (Exception e) {
+                        throw new RuntimeException(e);
+                    }
                 }
             }
-        }*/
+        }
 
     }
 
@@ -351,6 +359,20 @@ public class AssignmentCopyService  implements IAssignmentCopyService{
                 }
             }
         }
+    }
+
+    public void createRubricForAssignment(long assignmentId, long sectionId, CourseLearningOutcomes courseLearningOutcomes) throws Exception{
+        if(assignmentId == 0l || sectionId == 0l || courseLearningOutcomes == null){
+            throw new UnsupportedOperationException("This API should be used only for OBA" );
+        }
+        assignmentCopyDAO.createRubricForAssignment(assignmentId, courseLearningOutcomes);
+    }
+
+    public CourseLearningOutcomes reviewRubricForAssignment(long assignmentId, long sectionId) {
+        if(assignmentId == 0l || sectionId == 0l ){
+            throw new UnsupportedOperationException("This API should be used only for OBA" );
+        }
+        return assignmentCopyDAO.reviewRubricForAssignment(assignmentId);
     }
 
 

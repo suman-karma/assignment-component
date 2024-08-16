@@ -3,6 +3,7 @@ package io.mhe.assignmentcomponent.dao;
 import io.mhe.assignmentcomponent.vo.*;
 import org.springframework.stereotype.Repository;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -53,4 +54,10 @@ public interface IAssignmentCopyDAO {
     public MarathonInfo getMarathonInfo(Long marathonId, Long sectionId);
 
     long createNewMarathon(MarathonInfo marathonInfo);
+
+    CourseLearningOutcomes reviewRubricForAssignment(long assignmentId);
+
+    void createRubricForAssignment(long assignmentId, CourseLearningOutcomes courseLearningOutcomes) throws Exception;
+
+    public void updateLearningOutcomePolicy(long assignmentId, long sectionId, String policyValue) ;
 }
