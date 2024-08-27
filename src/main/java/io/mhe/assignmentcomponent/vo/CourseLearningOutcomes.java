@@ -1,7 +1,5 @@
 package io.mhe.assignmentcomponent.vo;
 
-import com.mhe.connect.business.reports.valueobj.LearningOutcomeCategoryScoreReportData;
-
 import java.util.ArrayList;
 import java.util.List;
 

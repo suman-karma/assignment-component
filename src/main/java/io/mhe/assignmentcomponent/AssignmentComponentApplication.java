@@ -4,12 +4,13 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 
-@SpringBootApplication
+@SpringBootApplication(exclude = {DataSourceAutoConfiguration.class })
 public class AssignmentComponentApplication {
 
 public static void main(String[] args) {
-		SpringApplication.run(AssignmentComponentApplication.class, args);
+
+	System.setProperty("ENV","QA_STAGING_AWS");
+	SpringApplication.run(AssignmentComponentApplication.class, args);
 }
 
 }
-// (exclude = {DataSourceAutoConfiguration.class })

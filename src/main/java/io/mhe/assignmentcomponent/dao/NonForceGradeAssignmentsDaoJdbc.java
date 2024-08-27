@@ -1,6 +1,7 @@
 package io.mhe.assignmentcomponent.dao;
 
 import com.mhe.common.configuration.IConfigurationProvider;
+import com.mhe.common.configuration.SQLBackedConfigurationProvider;
 import com.mhe.common.text.ITemplateService;
 import io.mhe.assignmentcomponent.constant.LMSConstants;
 import io.mhe.assignmentcomponent.constant.PoliciesServiceConstants;
@@ -26,7 +27,7 @@ import java.util.Map;
 public class NonForceGradeAssignmentsDaoJdbc implements INonForceGradeAssignmentsDAO {
 	
 	private static final String getAssignmentDatesFromPolicy = "policies/getAssignmentDatesFromPolicy.sql";
-	
+
 	private static final String insertOrUpdateAssignmentDatesInGradingQueue = "policies/mergeAssignmentDatesInGradingQueue.sql";
 	
 	private static final String insertOrUpdateAssignmentDatesInGradingQueueConditionally = "policies/mergeAssignmentDatesInGradingQueueConditionally.sql";
@@ -37,7 +38,7 @@ public class NonForceGradeAssignmentsDaoJdbc implements INonForceGradeAssignment
 
 	@Autowired
 	@Qualifier("configurationProperties")
-	private IConfigurationProvider configurationProvider;
+	private SQLBackedConfigurationProvider configurationProvider;
 
 	@Autowired(required=true)
 	private NamedParameterJdbcTemplate namedParameterJdbcTemplate;

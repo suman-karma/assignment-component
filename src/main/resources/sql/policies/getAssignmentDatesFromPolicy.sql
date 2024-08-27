@@ -1,0 +1,2 @@
+select pol.exchane_key, apx.value from assignment_policy_xref apx, policy pol where apx.assignment_id = :assignmentId and apx.section_id = :sectionId
+and pol.id = apx.policy_id and pol.exchane_key in ('p_startdate','p_duedate','p_latesubmissiondue')

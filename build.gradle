@@ -23,7 +23,7 @@ maven {
 			mavenPom()
 			artifact()
 		}
-}
+	}
 }
 
 dependencies {
@@ -37,10 +37,18 @@ implementation group: 'org.springframework', name: 'spring-jdbc'
 
 // https://mvnrepository.com/artifact/org.apache.httpcomponents.client5/httpclient5
 implementation 'org.apache.httpcomponents.client5:httpclient5:5.3.1'
-implementation 'com.amazonaws:aws-lambda-java-core:1.2.1'
+//implementation 'com.amazonaws:aws-lambda-java-core:1.2.1'
 implementation 'com.oracle.database.jdbc:ojdbc8:19.6.0.0'
+
+// https://mvnrepository.com/artifact/com.oracle/ojdbc14
+// implementation group: 'com.oracle', name: 'ojdbc14', version: '10.2.0.4.0'
+
 implementation group: 'org.jdom', name: 'jdom', version:'1.1.3'
 implementation group: 'xerces', name: 'xercesImpl', version:'2.12.0'
+
+	implementation 'com.amazonaws:aws-lambda-java-core:1.2.2'
+	implementation 'com.amazonaws:aws-lambda-java-events:3.11.1'
+	runtimeOnly 'com.amazonaws:aws-lambda-java-log4j2:1.5.1'
 
 // https://mvnrepository.com/artifact/com.amazonaws/aws-java-sdk-sqs
 implementation group: 'com.amazonaws', name: 'aws-java-sdk-sqs', version: '1.12.692'
@@ -49,16 +57,32 @@ implementation group: 'com.amazonaws', name: 'aws-java-sdk-sts', version: '1.12.
 // https://mvnrepository.com/artifact/org.apache.commons/commons-lang3
 implementation group: 'org.apache.commons', name: 'commons-lang3', version: '3.14.0'
 
-	implementation group: 'com.google.code.gson', name: 'gson', version: '2.7'
-	implementation group: 'commons-lang', name: 'commons-lang', version:'2.6'
-
-	implementation group: 'io.mhe.highered.connect.commons', name: 'amazons3-client', version:'4.16.3064-H-SNAPSHOT'
+implementation group: 'com.google.code.gson', name: 'gson', version: '2.7'
+implementation group: 'commons-lang', name: 'commons-lang', version:'2.6'
+implementation group: 'io.mhe.highered.connect.commons', name: 'core-utils', version:'4.16.3064-H-SNAPSHOT'
+implementation group: 'io.mhe.highered.connect.commons', name: 'amazons3-client', version:'4.16.3064-H-SNAPSHOT'
 implementation (group: 'io.mhe.highered.connect.commons', name: 'amazon-sqs-client', version:'4.16.3064-H-SNAPSHOT') {
 		exclude group: "com.google.code.gson", module: "gson"
 		exclude group: "com.fasterxml.jackson.core"
 		exclude group: "commons-lang", module: "commons-lang"
 		exclude group: "commons-codec", module: "commons-codec"
+	}
+//	implementation group: 'org.apache.maven.plugins', name: 'maven-shade-plugin', version: '3.6.0'
+
 }
+
+
+
+configurations.all {
+	resolutionStrategy.force 'com.google.guava:guava:14.0.1'
+	resolutionStrategy.force 'commons-io:commons-io:2.6'
+}
+
+task buildZip(type: Zip) {
+	into('lib') {
+		from(jar)
+		from(configurations.runtimeClasspath)
+	}
 }
 
 tasks.named('test') {

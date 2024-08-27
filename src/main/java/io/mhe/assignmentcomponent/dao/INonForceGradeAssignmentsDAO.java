@@ -3,10 +3,11 @@ package io.mhe.assignmentcomponent.dao;
 
 
 import io.mhe.assignmentcomponent.vo.AssignmentDatesVO;
+import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Map;
-
+@Repository
 public interface INonForceGradeAssignmentsDAO {
 	
 	/**

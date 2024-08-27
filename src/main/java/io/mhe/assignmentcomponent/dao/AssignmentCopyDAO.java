@@ -12,6 +12,7 @@ import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.*;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
@@ -36,6 +37,7 @@ public class AssignmentCopyDAO implements IAssignmentCopyDAO{
     private JdbcTemplate jdbcTemplate;
 
     @Autowired
+    @Qualifier("iNonForceGradeAssignmentsDAO")
     private INonForceGradeAssignmentsDAO iNonForceGradeAssignmentsDAO;
 
     private Connection connection = null;

@@ -19,6 +19,9 @@ public class CopyAssignmentEvent {
     Map<Long, Long> oldAndNewOutcomes = new HashMap<Long, Long>();
     boolean isMarathon;
 
+    public CopyAssignmentEvent() {
+    }
+
     public CopyAssignmentTO getSrcAssignment() {
         return srcAssignment;
     }

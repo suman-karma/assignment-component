@@ -30,9 +30,9 @@ public class IntegrationRestService implements IIntegrationRestService {
     //@Autowired
     RestTemplate restTemplate = new RestTemplate();
 
-    @Value("${eztest.hm.server.url}")
+    @Value("${eztest_hm_server_url}")
     String eztestUrl ;
-    @Value("${eztest.pass.phrase}")
+    @Value("${eztest_pass_phrase}")
     String eztPassPhase;
 
 
