@@ -1,9 +1,12 @@
 package io.mhe.assignmentcomponent.service;
 
+import com.google.gson.Gson;
 import io.mhe.assignmentcomponent.common.util.HashingUtil;
 import io.mhe.assignmentcomponent.common.util.XmlUtils;
+import io.mhe.assignmentcomponent.service.generic.constants.RestConstant;
 import io.mhe.assignmentcomponent.vo.*;
 
+import org.apache.commons.codec.binary.Base64;
 import org.apache.hc.client5.http.classic.HttpClient;
 import org.apache.hc.client5.http.impl.classic.HttpClients;
 import org.jdom.Element;
@@ -16,12 +19,16 @@ import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.http.client.ClientHttpRequestFactory;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
 import java.net.URLEncoder;
+import java.util.Map;
+import java.util.Set;
 
 @Service
 public class IntegrationRestService implements IIntegrationRestService {
@@ -148,6 +155,90 @@ public class IntegrationRestService implements IIntegrationRestService {
         XMLOutputter xmlOutputter = new XMLOutputter();
         return xmlOutputter.outputString(txNode);
 
+    }
+
+
+    public <T> ResponseEntity<T> callRestURL(RestTransferTO<T> restTO) throws Exception {
+        ResponseEntity<T> response = null;
+        String url = null;
+        try {
+            HttpHeaders headers = getHeaders(restTO);
+            HttpEntity<T> entity = null;
+            if (MediaType.APPLICATION_JSON_VALUE.equals(restTO.getContentType().getType())) {
+                entity = new HttpEntity(new Gson().toJson(restTO.getRequestType()), headers);
+            } else {
+                entity = new HttpEntity(restTO.getRequestType(), headers);
+            }
+
+            url = generatedURL(restTO);
+
+            url = bindUrl(url, restTO);
+            logger.debug("Complete url along with attributes after binding  = " + url);
+            logger.debug("RestTransferTO before calling rest service :: {}",restTO);
+            response = restTemplate.exchange(url, restTO.getHttpMethod(), entity, restTO.getResponseType(), restTO.getParameters());
+            logger.debug("RestServiceBuilder's callRestURL method - after response = " + response.getStatusCode());
+
+            return response;
+        } catch (RestClientException e) {
+            logger.error("RestServiceBuilder's callRestURL method - exception for URL = " + url + " Exception : " + e.getMessage());
+            throw e;
+        }
+    }
+
+
+    public HttpHeaders getHeaders(RestTransferTO restTO) {
+        HttpHeaders headers = new HttpHeaders();
+        try {
+            headers.setContentType(restTO.getContentType());
+
+            String authHeader = null;
+            if (restTO != null &&
+                    RestConstant.HTTP_AUTH_SECURITY_TYPE.equals(restTO.getHttpSecurityType())) {
+                authHeader = "";
+                if (restTO.isPopulateHeaderParams()) {
+                    for (Map.Entry<String, String> entry : ((Map<String, String>) restTO.getHeaderParams()).entrySet()) {
+                        headers.add(entry.getKey(), entry.getValue());
+                        if (RestConstant.AUTHORIZATION_HEADER_KEY.equalsIgnoreCase(entry.getKey())) {
+                            authHeader = entry.getValue();
+                        }
+                    }
+                }
+                // oauth related codes need to go here
+            } else if (RestConstant.SECURITY_TYPE_NONE.equals(restTO.getHttpSecurityType())) {
+                // invoking service for MHC, security not required
+                authHeader = "";
+            } /*else if (credentials != null && credentials.getUserName() != null && credentials.getPassword() != null) {
+                String auth = credentials.getUserName() + ":" + credentials.getPassword();
+                byte[] encodedAuth = Base64.encodeBase64(auth.getBytes());
+                authHeader = RestConstant.BASIC_AUTH_HEADER + " " + new String(encodedAuth);
+            }*/
+            headers.set(RestConstant.AUTHORIZATION_HEADER_KEY, authHeader);
+
+        } catch (Exception e) {
+            logger.error(e.getMessage());
+        }
+        return headers;
+    }
+
+    public String generatedURL(RestTransferTO restTO) {
+        return restTO.getBaseUrl() + restTO.getRestRelativeURL();
+    }
+
+    public String bindUrl(String url, RestTransferTO restTO) {
+        String localUrl = url;
+        if (restTO.getParameters() != null) {
+            Map<String, Object> bindMap = restTO.getParameters();
+            Set<String> keys = bindMap.keySet();
+
+            for (String key : keys) {
+                String bindKey = getBindVariable(key);
+                localUrl = localUrl.replace(bindKey, String.valueOf(bindMap.get(key)));
+            }
+        }
+        return localUrl;
+    }
+    public String getBindVariable(String key) {
+        return "{" + key + "}";
     }
 
 }

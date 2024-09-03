@@ -12,7 +12,7 @@ import java.util.Map;
 @Service
 public interface IAssignmentCopyService {
 
-    public void copyAssignment(CopyAssignmentTO srcAssignment, long oldSectionID,
+    /*public void copyAssignment(CopyAssignmentTO srcAssignment, long oldSectionID,
                                long newSectionID,
                                long[] origCategoryIds,
                                long[] newCategoryIds,
@@ -22,7 +22,7 @@ public interface IAssignmentCopyService {
                                Map assignMap, String coursePrimaryInstructorId,
                                Map<Long, Long> oldAndNewCategories,
                                Map<Long, Long> oldAndNewOutcomes,
-                               boolean isMarathon) throws Exception ;
+                               boolean isMarathon) throws Exception ;*/
 
     public void copyAssignmentsToNewSection(CopyAssignmentTO srcAssignment, long oldSectionID,
                                             long newSectionID,
@@ -93,25 +93,12 @@ public interface IAssignmentCopyService {
 
     public CourseLearningOutcomes reviewRubricForAssignment(long assignmentId, long sectionId) ;
 
-    /*
-    public GroupAssignment getGroupAssignmentById(long assignmentId, long sectionId); // is this requried group assignmet import?
 
-    public void copyGroupAssignmentPropertiesForCopyAssignment(CopyAssignment[] ca);
-
+    public void copyGroupAssignmentPropertiesForCopyAssignment(CopyAssignmentTO[] ca);
 
     Assignment getURLBasedAssignment(long assignmentId);
 
     ActivityItem[] getActivityItemsForActivity(long id);
 
-
-    Assignment getAssignment(long assignmentId);
-
-
-    Product getProduct(String type);
-
-
-
-
-    void addActivityAndALAInfoForAssignment(AssignmentTO assignment);
-     */
+    void addActivityAndALAInfoForAssignment(Assignment assignment);
 }

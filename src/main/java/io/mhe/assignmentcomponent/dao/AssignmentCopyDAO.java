@@ -2,7 +2,10 @@ package io.mhe.assignmentcomponent.dao;
 
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Table;
+import io.mhe.assignmentcomponent.common.util.GenUtil;
 import io.mhe.assignmentcomponent.common.util.Utility;
+import io.mhe.assignmentcomponent.sqs.util.AmazonSQSConstants;
+import io.mhe.assignmentcomponent.sqs.util.AmazonSQSHelper;
 import io.mhe.assignmentcomponent.vo.*;
 import oracle.jdbc.OracleConnection;
 import oracle.sql.ARRAY;
@@ -30,12 +33,14 @@ import java.util.stream.Collectors;
 
 @Repository
 public class AssignmentCopyDAO implements IAssignmentCopyDAO{
-    private final Logger logger = LoggerFactory.getLogger(AssignmentCopyDAO.class);
+    private static Logger logger = LoggerFactory.getLogger(AssignmentCopyDAO.class);
     @Autowired(required=true)
     private NamedParameterJdbcTemplate namedParameterJdbcTemplate;
     @Autowired
     private JdbcTemplate jdbcTemplate;
 
+    @Autowired
+    private AmazonSQSHelper amazonSQSHelper;
     @Autowired
     @Qualifier("iNonForceGradeAssignmentsDAO")
     private INonForceGradeAssignmentsDAO iNonForceGradeAssignmentsDAO;
@@ -628,49 +633,638 @@ public class AssignmentCopyDAO implements IAssignmentCopyDAO{
         namedParameterJdbcTemplate.update(INSERT_PARENT_ASSIGNMENT_STATUS, parentStatusForAssignment);
     }
 
-    /*
     @Override
-    public GroupAssignment getGroupAssignmentById(long assignmentId, long sectionId) {
+    public void copyGroupAssignmentPropertiesForCopyAssignment(CopyAssignmentTO[] ca) {
+        Connection conn = null;
+        PreparedStatement ps = null;
+
+        String query = "insert into section_group_assignment_xref (select ?, ?, 'N', students_per_group, sysdate, sysdate from "
+                + "section_group_assignment_xref where section_id = ? and assignment_id = ?)";
         try {
-            Map<String, Object> paramMap = new HashMap<String, Object>();
-            paramMap.put("assignmentId", assignmentId);
-            paramMap.put("sectionId", sectionId);
-            GroupAssignment ga = jdbcTemplate.queryForObject(
-                    GET_GROUPASSIGNMENT_BY_ASSIGNMENTID, new Object[] { assignmentId, sectionId }, new RowMapper<GroupAssignment>() {
-                        @Override
-                        public GroupAssignment mapRow(ResultSet rs, int rowNum) throws SQLException {
-                            GroupAssignment ga = new GroupAssignment();
-                            getAssignmentWithoutExtensionInfo(rs, ga);
-                            return ga;
-                        }
-                    });
-            return ga;
+            conn = jdbcTemplate.getDataSource().getConnection();
+            if (ca != null && ca.length > 0) {
+                for (int i = 0; i < ca.length; i++) {
+                    ps = conn.prepareStatement(query);
+                    ps.setLong(1, ca[i].getNewSectionId());
+                    ps.setLong(2, ca[i].getNewAssignmentId());
+                    ps.setLong(3, ca[i].getSectionId());
+                    ps.setLong(4, ca[i].getAssignmentId());
+                    ps.addBatch();
+                }
+                ps.executeBatch();
+            }
+        } catch (SQLException e) {
+            logger.error("", e);
+            logger.error("query: " + query);
+            if (ca != null && ca.length > 0) {
+                for (int i = 0; i < ca.length; i++) {
+                    logger.error("param 1 : " + ca[i].getNewSectionId());
+                    logger.error("param 2 : " + ca[i].getNewAssignmentId());
+                    logger.error("param 3 : " + ca[i].getSectionId());
+                    logger.error("param 4 : " + ca[i].getAssignmentId());
+                }
+            }
+            logger.error("SQLException Message:" + e.getMessage());
+            // throw exception
+        } finally {
+            // handle connection clousure
+        }
+
+    }
+
+    @Override
+    public Assignment getURLBasedAssignment(long assignmentID) {
+
+        try {
+            Assignment assignment = this.getAssignment(String.valueOf(assignmentID));
+            Map alaIDs = this.getAlaManagerIdsForAssignments(new String[] { "" + assignmentID });
+
+            if (alaIDs.containsKey("" + assignmentID)) {
+                String alaID = (String) alaIDs.get("" + assignmentID);
+                ActivityItem[] actItems = this.getALAItemsForALA(alaID);
+                List<WebLink> webLinkList = new ArrayList<WebLink>();
+                for (ActivityItem acItem : actItems) {
+                    if (assignment.getContentProvider().equals(
+                            "Connect")) {
+                        WebLink webLinks = new WebLink(acItem.getTitle(),
+                                acItem.getRenderingUrl());
+                        webLinkList.add(webLinks);
+                    } else if (assignment.getContentProvider().equals(
+                            "TextFlow")) {
+                        assignment.setEbookReadingURL(acItem.getRenderingUrl());
+                        break;
+                    }
+                }
+                assignment.setWebLinks(webLinkList
+                        .toArray(new WebLink[webLinkList.size()]));
+            }
+            return assignment;
+
+
         } catch (Exception e) {
-            return null;
+            throw new RuntimeException(e);
         }
     }
 
     @Override
-    public int[] copyGroupAssignmentPropertiesForCopyAssignment(CopyAssignment[] ca) {
-        final List<CopyAssignment> la = Arrays.stream(ca).toList();
-        return this.jdbcTemplate.batchUpdate(
-                "insert into section_group_assignment_xref (select ?, ?, 'N', students_per_group, sysdate, sysdate from "
-                        + "section_group_assignment_xref where section_id = ? and assignment_id = ?)",
-                new BatchPreparedStatementSetter() {
-                    public void setValues(PreparedStatement ps, int i) throws SQLException {
-                        CopyAssignment copy = la.get(i);
-                        ps.setLong(1, copy.getNewSectionId());
-                        ps.setLong(2, copy.getNewAssignmentId());
-                        ps.setLong(3, copy.getSectionId());
-                        ps.setLong(4, copy.getAssignmentId());
+    public void addActivityAndALAInfoForAssignment(Assignment assignmentObj) {
+        Activity activity = this.prepareActivityWithActivityItems(assignmentObj);
+       // why fetch using for all basic advanced and default.
+        //logger.debug("addActivityAndALAInfoForAssignment assignmentObj.getType()"+assignmentObj.getType()+" Product type: "+  productTemplate);
+        // Have Removed Check for LabSmat/LearnSmart and other assignment types which are configured through Products
+        // table and making the check at template level
+        if ("VIDEO".equals(assignmentObj.getType()) || "ALE".equals(assignmentObj.getType())
+                || "URL_BASED".equals(assignmentObj.getType())
+                ||"FILEATTACH".equals(assignmentObj.getType())
+                || "GROUP".equals(assignmentObj.getType())
+                || "WRITING".equals(assignmentObj.getType())
+                || "BLOG".equals(assignmentObj.getType())
+                || "MUZZY_LANE".equals(assignmentObj.getType())
+                || "DISCUSSION".equals(assignmentObj.getType())
+                || "Generic".equals(assignmentObj.getProvider())
+                || (org.apache.commons.lang3.StringUtils.isNotEmpty(assignmentObj.getNativeAlaId())
+                && assignmentObj.getNativeAlaId().startsWith("Generic"))
+              //  || (ProductTemplate.BASIC.equals(productTemplate) || ProductTemplate.ADVANCED.equals(productTemplate)
+              //  || ProductTemplate.DEFAULT.equals(productTemplate))
+                ) {
+
+            try {
+                addActivitiesAndItemsForAssignment(activity, assignmentObj.getID());
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+
+            // writing to SQS start
+            long sectionID = assignmentObj.getCurrentSectionId();
+            //method parameters - long assignmentId, long sectionId, long studentId, String transactionType, int attemptNo, String source
+            try {
+                amazonSQSHelper.writeToSQSQueue(assignmentObj.getID(), sectionID, 0,
+                        AmazonSQSConstants.ACTIVITY_TYPE_SKILL_CATEGORY, 0,
+                        "AlaManagerBusinessService -> addActivityAndALAInfoForAssignment()", null);
+            } catch(Exception e) {
+                logger.error("Error in writing to Amazon SQS inside addActivityAndALAInfoForAssignment", e);
+            }
+            // writing to SQS done
+
+        }
+
+    }
+
+    public boolean addActivitiesAndItemsForAssignment(Activity addAct, long assignmentID) throws Exception {
+        Activity[] existingActivities = this.getActivitiesForAssignment(assignmentID);
+
+        // Step 5 If Existing Activities , Activity Items are not null then delete Activities and Activity Items and all
+        // the Associations
+        if (existingActivities != null && existingActivities.length > 1) {
+            throw new Exception("The Activities associated with assignment cannot be greater than 1");
+        }
+        if (addAct == null) {
+            throw new Exception("Activity Cannot be Null");
+        }
+
+        long actNID = 0l;
+
+        if (existingActivities != null && existingActivities.length == 1) {
+            if (logger.isDebugEnabled()) {
+                logger.debug("addAct = " + addAct);
+                logger.debug("alamanager_id = " + addAct.getAlaManagerID());
+            }
+            addAct.setID(existingActivities[0].getID());
+            long beginUpdateActivity = System.currentTimeMillis();
+            actNID = this.updateActivity(addAct, assignmentID);
+            this.updateAssignmentUpdatedDate(assignmentID);
+            logger.debug("AlaManagerBusinessService.addActivitiesRegistrationInfo() -Time taken to update activity "
+                    + (System.currentTimeMillis() - beginUpdateActivity) + " ms");
+        } else {
+            long addActivityTime = System.currentTimeMillis();
+            actNID = this.addActivityToAssignment(addAct, assignmentID);
+            logger.debug("AlaManagerBusinessService.addActivitiesRegistrationInfo() - Time taken for adding activity to activity table "
+                    + (System.currentTimeMillis() - addActivityTime) + " ms");
+        }
+        ActivityItem[] activityItems = this.getActivityItemsByAssignmentId(assignmentID);
+        if (activityItems.length > 0) {
+            // Deleting the existing activity items.
+            this.deleteActivityItemsByActivityId(actNID);
+        }
+        if (addAct.getActivityItems() != null) {
+            this.addActivityItemsToActivity(addAct.getActivityItems(), actNID);
+
+        }
+        logger.debug(" Activities Created and associated with Assignment ");
+        return true;
+    }
+
+    public static Activity prepareActivityWithActivityItems(Assignment assignment) {
+        logger.debug("Inside prepareActivityWithActivityItems, assignment: {}", assignment);
+        Activity activity = new Activity();
+        if (org.apache.commons.lang3.StringUtils.isNotEmpty(assignment.getNativeAlaId())
+                && assignment.getNativeAlaId().startsWith("Generic")) {
+            activity.setNativeAlaId(assignment.getNativeAlaId());
+        } else if ("Generic".equals(assignment.getProvider())
+                && (org.apache.commons.lang3.StringUtils.isNotEmpty(assignment.getToolId()))) {
+            activity.setNativeAlaId("Generic" + "_" + assignment.getToolId());
+        } else {
+            activity.setNativeAlaId("connect_" + assignment.getID());
+        }
+        activity.setType("Custom");
+        if (assignment.getTitle() != null) {
+            activity.setTitle(assignment.getTitle());
+        } else {
+            activity.setTitle("dummy");
+        }
+        activity.setAssignmentID(assignment.getID());
+        activity.setAlaManagerID(0l);
+        activity.setWeightBased(false);
+        activity.setRepeatable(false);
+        activity.setBeginNote(" ");
+        activity.setEndNote(" ");
+        activity.setSequenceNo(0);
+        activity.setWeight(assignment.getWeight());
+
+        List<ActivityItem> activityItems = new ArrayList<ActivityItem>();
+        if (assignment.getType().equals("URL_BASED") && assignment.getContentProvider().equals("Connect")) {
+            //Web Assignment
+            WebLink[] webLinks = assignment.getWebLinks();
+            for (int i = 0; i < webLinks.length; i++) {
+                ActivityItem activityItem = new ActivityItem();
+                activityItem.setNativeAlaId("connect");
+                activityItem.setTitle(webLinks[i].getWebLinkName());
+                activityItem.setRenderingUrl(webLinks[i].getWebLinkURL());
+                activityItem.setSequenceNo(i + 1);
+                activityItem.setWeight(assignment.getWeight());
+                activityItems.add(activityItem);
+            }
+            activity.setAlaContentProvider("Connect");
+        } else if (assignment.getType().equals("URL_BASED") && assignment.getContentProvider().equals("TextFlow")) {
+            String readingURL = assignment.getEbookReadingURL();
+            //Setting Uuid in case if assignment object having null value for Reading textflow.
+            if(GenUtil.isBlankString(readingURL)){
+                readingURL = assignment.getUuid();
+            }
+            ActivityItem activityItem = new ActivityItem();
+            activityItem.setNativeAlaId("textflow");
+            activityItem.setTitle(readingURL);
+            activityItem.setRenderingUrl(readingURL);
+            activityItem.setSequenceNo(1);
+            activityItem.setWeight(assignment.getWeight());
+            activityItems.add(activityItem);
+            activity.setAlaContentProvider("TextFlow");
+        } else if ((assignment.getType().equals("VIDEO") ) ) {
+            ActivityItem activityItem = new ActivityItem();
+            activityItem.setNativeAlaId("connect_" + assignment.getID());
+            activityItem.setTitle("dummy");
+            activityItem.setRenderingUrl("dummy");
+            activityItem.setSequenceNo(1);
+            activityItem.setWeight(assignment.getWeight());
+            activityItems.add(activityItem);
+            activity.setAlaContentProvider("Connect");
+        }else if( assignment.getType().equals("FILEATTACH")  && assignment.getContentProvider().equals("Connect"))
+        {
+            ActivityItem activityItem = new ActivityItem();
+            activityItem.setNativeAlaId("connect_" + assignment.getID());
+            activityItem.setTitle(assignment.getTitle());
+            activityItem.setRenderingUrl("dummy");
+            activityItem.setSequenceNo(1);
+            activityItem.setWeight(assignment.getWeight());
+            activityItems.add(activityItem);
+        }else if (assignment.getType().equals("ALE") && assignment.getContentProvider().equals("ale")) {
+            ActivityItem activityItem = new ActivityItem();
+            activityItem.setNativeAlaId("connect_" + assignment.getID());
+            activityItem.setTitle(assignment.getTitle());
+            activityItem.setRenderingUrl("dummy");
+            activityItem.setSequenceNo(1);
+            activityItem.setWeight(assignment.getWeight());
+            activityItems.add(activityItem);
+            activity.setAlaContentProvider("ale");
+
+        } /*else if (assignment.getContentProvider().equals(ProductVariables.PROVIDER_AREA9) || "learnsmart".equalsIgnoreCase(assignment.getContentProvider())){
+            ActivityItem activityItem = new ActivityItem();
+            activityItem.setNativeAlaId("connect_" + assignment.getID());
+            activityItem.setTitle(assignment.getTitle());
+            activityItem.setRenderingUrl("http://dummy.com");
+            activityItem.setSequenceNo(1);
+            activityItem.setWeight(assignment.getWeight());
+            activityItems.add(activityItem);
+            activity.setAlaContentProvider(ProductVariables.LEARN_SMART);
+            activity.setNativeAlaId("connect_" + assignment.getID());
+        }*/
+        //for sealworks provider
+        else if (assignment.getContentProvider().equalsIgnoreCase("Sealworks")){
+            ActivityItem activityItem = new ActivityItem();
+            activityItem.setNativeAlaId("connect_" + assignment.getID());
+            activityItem.setTitle(assignment.getTitle());
+            activityItem.setRenderingUrl("http://dummy.com");
+            activityItem.setSequenceNo(1);
+            activityItem.setWeight(assignment.getWeight());
+            activityItems.add(activityItem);
+            activity.setNativeAlaId("connect_" + assignment.getID());
+        } else if (assignment.getType().equals("GROUP")) {
+            activity.setNativeAlaId("group_" + assignment.getID());
+            activity.setWeight((long) assignment.getWeight());
+            activity.setAlaContentProvider("Connect");
+
+            //CST-1373-added to populate the activity_item table
+            ActivityItem activityItem = new ActivityItem();
+            activityItem.setNativeAlaId("group_" + assignment.getID());
+            activityItem.setTitle("dummy_group_"+ assignment.getID());
+            activityItem.setRenderingUrl("dummy");
+            activityItem.setSequenceNo(1);
+            activityItem.setWeight(assignment.getWeight());
+            activityItems.add(activityItem);
+            //End of CST-1373
+
+        }else if (assignment.getType().equals("WRITING") || assignment.getType().equals("BLOG")
+                || assignment.getType().equals("DISCUSSION")) {
+
+            activity.setWeight((long) assignment.getWeight());
+            activity.setAlaContentProvider("Connect");
+            activity.setNativeAlaId("writing_" + assignment.getID());
+
+            ActivityItem activityItem = new ActivityItem();
+            activityItem.setNativeAlaId("writing_" + assignment.getID());
+            activityItem.setTitle(assignment.getTitle());
+            activityItem.setRenderingUrl("http://dummy.com");
+            activityItem.setSequenceNo(1);
+            activityItem.setWeight(assignment.getWeight());
+            activityItems.add(activityItem);
+
+
+        }else if (assignment.getType().equals("READER17")){
+            activity.setAlaContentProvider("Connect");
+            activity.setNativeAlaId("reader17_" + assignment.getID());
+
+            ActivityItem activityItem = new ActivityItem();
+            activityItem.setNativeAlaId("reader17_" + assignment.getID());
+            activityItem.setTitle(assignment.getTitle());
+            activityItem.setRenderingUrl("http://dummy.com");
+            activityItem.setSequenceNo(1);
+            activityItem.setWeight(assignment.getWeight());
+            activityItems.add(activityItem);
+        } else if (assignment.getType().equals("MUZZY_LANE")){
+            activity.setNativeAlaId("connect_" + assignment.getID());
+            ActivityItem activityItem = new ActivityItem();
+            activityItem.setNativeAlaId("connect_" + assignment.getID());
+            activityItem.setTitle(assignment.getTitle());
+            activityItem.setRenderingUrl("http://dummy.com");
+            activityItem.setSequenceNo(1);
+            activityItem.setWeight(assignment.getWeight());
+            activityItems.add(activityItem);
+        }
+
+        // Assuming one video assignment is equivalent to one activity and one activity item.
+        float weight = 0;
+        for (int j = 0; j < activityItems.size(); j++) {
+            logger.debug("Activity Item id " + activityItems.get(j).getID());
+            logger.debug("Activity Item ALAMGR " + activityItems.get(j).getAlaManagerID());
+            logger.debug("Activity Item Weight " + activityItems.get(j).getWeight());
+            weight += activityItems.get(j).getWeight();
+        }
+        if (weight != 0f) {
+            activity.setWeight((long) weight);
+            activity.setWeightBased(true);
+        }
+        activity.setQuestions(activityItems.size());
+
+        activity.setActivityItems(activityItems);
+
+        logger.debug("Inside prepareActivityWithActivityItems, prepared activity: {}", activity);
+        return activity;
+    }
+
+    public ActivityItem[] getALAItemsForALA(String alaId) {
+        List<ActivityItem> activityItemList = jdbcTemplate.query(
+                SQL_GET_ALAITEMS, new Object[] { alaId }, new RowMapper<ActivityItem>() {
+                    @Override
+                    public ActivityItem mapRow(ResultSet rs, int rowNum) throws SQLException {
+                        return getALAItem(rs);
                     }
-                    public int getBatchSize() {
-                        return la.size();
+                });
+        return (ActivityItem[]) activityItemList.toArray(new ActivityItem[0]);
+    }
+
+    private ActivityItem getALAItem(ResultSet rs) throws SQLException {
+        ActivityItem actItem = new ActivityItem();
+        actItem.setRenderingUrl(rs.getString("RENDERING_URL"));
+        actItem.setTitle(rs.getString("TITLE"));
+        actItem.setID(Long.parseLong(rs.getString("ACTIVITY_ITEM_ID")));
+        actItem.setNativeAlaId(rs.getString("NATIVE_ALA_ID"));
+        return actItem;
+    }
+
+    private static final String GET_ASSIGNMENTS_BY_ID = "SELECT a.* , secxref.lms_deployed ,secxref.lms_deploy_on, secxref.bb_deploy_on , secxref.bb_is_deployed , secxref.self_review_enabled as selfreview_from_sax, secxref.peer_review_enabled as peerreview_from_sax, "
+            + " secxref.peer_review_rubric_id, secxref.self_review_rubric_id, secxref.instructor_review_rubric_id , secxref.peer_review_due_date as peerreview_date_from_sax ,"
+            + " CASE WHEN (select count(1) from assignment_policy_xref where policy_id =  (select id from policy where exchane_key = 'p_proctoring_enabled')  and assignment_id = ${ID}) > 0 THEN 'Y' ELSE 'N' END AS proctoring_enabled "
+            + " FROM ASSIGNMENT a "
+            + " LEFT OUTER JOIN section_assignment_xref secxref on secxref.assignment_id = a.assignment_id "
+            + " WHERE a.is_deleted = 'false' and a.ASSIGNMENT_ID = ${ID} ";
+
+    private static final String GET_ALAMGRID_FOR_ASSIGNMENT_IDS = "SELECT ASSIGNMENT_ID,ACTIVITY_ID"
+            + " FROM ACTIVITY WHERE ASSIGNMENT_ID IN (:assignmentIds)"
+            + " ORDER BY ASSIGNMENT_ID,SEQUENCE_NO DESC";
+
+    private static final String SQL_GET_ALAITEMS = " SELECT * FROM ACTIVITY_ITEM WHERE ACTIVITY_ID = ? ";
+
+    public Map<String, String> getAlaManagerIdsForAssignments(String[] assignmentIds) {
+        Map<String, Object> paramMap = new HashMap<String, Object>();
+        paramMap.put("assignmentIds", Arrays.asList(assignmentIds));
+
+        return this.namedParameterJdbcTemplate.query(GET_ALAMGRID_FOR_ASSIGNMENT_IDS, paramMap,
+                new ResultSetExtractor<Map<String, String>>() {
+                    private Map<String, String> alaMgrIdMap = new HashMap<String, String>();
+
+                    @Override
+                    public Map<String, String> extractData(ResultSet rs) throws SQLException {
+                        while (rs.next()) {
+                            alaMgrIdMap.put(rs.getString("ASSIGNMENT_ID"), rs.getString("ACTIVITY_ID"));
+                        }
+                        return alaMgrIdMap;
                     }
                 });
     }
 
+    public Assignment getAssignment(String assignmentId ) throws Exception {
 
+        Connection connection = null;
+        Statement stmt = null;
+        ResultSet rst = null;
+        String query = null;
+        Assignment assignmt = null;
+        try {
+
+            connection = jdbcTemplate.getDataSource().getConnection();
+            stmt = connection.createStatement();
+            query = Replace.replace(GET_ASSIGNMENTS_BY_ID, "${ID}",  assignmentId);
+
+            if (logger.isDebugEnabled()) {
+                logger.debug(query);
+            }
+            rst = stmt.executeQuery(query);
+            if (rst.next()) {
+                assignmt = getAssignment(rst, true);
+                if ("VIDEO".equalsIgnoreCase(rst.getString("ASSIGNMENT_TYPE"))) {
+                    assignmt.setSelfReview("Y".equalsIgnoreCase(rst
+                            .getString("SELFREVIEW_FROM_SAX")) ? true : false);
+                    assignmt.setSelfRubricId(rst.getLong("SELF_REVIEW_RUBRIC_ID"));
+                    assignmt.setInstRubricId(rst.getLong("INSTRUCTOR_REVIEW_RUBRIC_ID"));
+                    if ("Y".equalsIgnoreCase(rst.getString("PEERREVIEW_FROM_SAX"))) {
+                        assignmt.setPeerReview(true);
+                        assignmt.setPeerRubricId(rst.getLong("PEER_REVIEW_RUBRIC_ID"));
+                        String timestamp = Assignment.getNonNullString(rst
+                                .getString("PEERREVIEW_DATE_FROM_SAX"));
+                        if (Assignment.stringIsBlankOrNull(timestamp)) {
+                            assignmt.setPeerReviewDueDate(new Date(0));
+                        } else {
+                            assignmt.setPeerReviewDueDate(getTimestamp(rst,
+                                    "PEERREVIEW_DATE_FROM_SAX"));
+                        }
+                    }
+                }
+
+                /*
+                COMMENTED THE PRODUCT PART.. SEEMS IT IS SETTING THE WEIGHT WHICH IS ALREADY SET.
+                setLockedStatus  NEED TO CEHCK..
+
+                 */
+
+
+                // Getting the product assignment types list for Area9 platform for
+                // setting weight to this Assignment.
+
+                /*
+                Product product = productConfigDao.getProduct(assignmt.getType().getValue());
+                boolean productBasedAssignment = (product != null && (ProductTemplate.BASIC.getTemplateName().equalsIgnoreCase(product.getTemplate())
+                        || ProductTemplate.ADVANCED.getTemplateName().equalsIgnoreCase(product.getTemplate()) || ProductTemplate.DEFAULT
+                        .getTemplateName()
+                        .equalsIgnoreCase(product.getTemplate())));
+
+                if (assignmt.getType().equals("ASSESMENT")
+                        || productBasedAssignment
+                        || "Generic".equals(assignmt.getProvider())) {
+                    float weight = DaoFactory.getInstance().getActivitiesDao().getWeightByAssignmentId(assignmt.getID());
+                    if("AVALON".equals(assignmt.getType()) ||  "Generic".equals(assignmt.getProvider()) || "READER17".equals(assignmt.getType())){
+                        assignmt.setWeight(weight);
+                    }else{
+                        assignmt.setWeight(Math.max(1.0f, weight));
+                    }
+                    logger.debug("setting assignment weight {}", assignmt.getWeight());
+                    // added for point and indicators
+                    assignmt.setLockedStatus(rst.getString("locked_flag"));
+                }
+
+                 */
+
+                // d2l change
+                if ("Y".equals(rst.getString("lms_deployed"))) {
+                    assignmt.setLmsDeployed(true);
+                } else {
+                    assignmt.setLmsDeployed(false);
+                }
+                if ("Y".equals(rst.getString("lms_deploy_on"))) {
+                    assignmt.setLmsDeployOn(true);
+                } else {
+                    assignmt.setLmsDeployOn(false);
+                }
+
+                boolean proctoringEnabled = "Y".equals(rst.getString("proctoring_enabled")) ? true : false;
+                assignmt.setProctoringEnabled(proctoringEnabled);
+
+            } else {
+                throw new Exception("No Assignment exists with assignment Id : "
+                        + assignmentId);
+            }
+
+        } catch (SQLException e) {
+            throw e;
+        } finally {
+            releaseResources(connection, stmt, rst);
+        }
+        return assignmt;
+
+    }
+
+
+    public Assignment getAssignment(ResultSet rst, boolean getAttachements) throws Exception {
+        Assignment assignment;
+        try {
+            assignment = getAssignmentWithoutExtensionInfo(rst, true);
+            return assignment;
+        } catch (Exception e) {
+           throw e;
+        }
+
+    }
+
+    private Assignment getAssignmentWithoutExtensionInfo(ResultSet rst, boolean getPrerequisite)
+            throws SQLException, Exception {
+        return getAssignmentWithoutExtensionInfo(rst, new Assignment());
+    }
+
+    private Assignment getAssignmentWithoutExtensionInfo(ResultSet rst, Assignment assignment) throws SQLException {
+        if (assignment != null) {
+            assignment.setID(rst.getLong("ASSIGNMENT_ID"));
+            assignment.setTitle(rst.getString("TITLE"));
+
+            /** DestinationId for assignment **/
+            assignment.setDestinationId(rst.getLong("DESTINATION_ID"));
+
+            /** Timezone for US/Eastern **/
+            assignment.setStartDate(getTimestamp(rst, "START_DATE"));
+            logger.debug("Assignment start date" + getTimestamp(rst, "START_DATE"));
+            assignment.setDueDate(getTimestamp(rst, "DUE_DATE"));
+            assignment.setWeight(rst.getFloat("WEIGHT"));
+            logger.debug("AssignmentsDaoJdbc_getAssignmentWithoutExtensionInfo_IS_CHAT_ASSIGNMENT from DB:" + rst.getString("IS_CHAT_ASSIGNMENT"));
+            assignment.setChatAssignment(("Y".equals(rst.getString("IS_CHAT_ASSIGNMENT"))) ? true
+                    : false);
+            logger.debug("AssignmentsDaoJdbc_getAssignmentWithoutExtensionInfo_IS_CHAT_ASSIGNMENT:" + assignment.isChatAssignment());
+
+            if (rst.getString("ACCESS_LEVEL") != null) {
+                assignment.setAccess_level(rst.getString("ACCESS_LEVEL"));
+            }
+            if (rst.getString("ISPOLICYOVERRIDDEN") != null) {
+                assignment.setPolicyOverridden(rst.getString("ISPOLICYOVERRIDDEN"));
+            }
+            if (rst.getString("PRIMARY_INSTRUCTOR_ID") != null) {
+                assignment.setPrimary_instructor_id(rst.getString("PRIMARY_INSTRUCTOR_ID"));
+            }
+            if (rst.getString("STATUS") != null) {
+                assignment.setStatus(rst.getString("STATUS"));
+            }
+            if (rst.getString("CATEGORY_ID") != null) {
+                assignment.setCategory_id(rst.getLong("CATEGORY_ID"));
+            }
+
+            if (rst.getString("SHOW_HIDE") != null && "N".equals(rst.getString("SHOW_HIDE"))) {
+                assignment.setShowAssignment(false);
+            } else {
+                assignment.setShowAssignment(true);
+            }
+            assignment.setProducerId(GenUtil.parseLong(rst.getString("PRODUCER_ID"), 0L));
+            assignment.setConsumerId(GenUtil.parseLong(rst.getString("CONSUMER_ID"), 0L));
+            assignment.setNote(rst.getString("ASSIGNMENT_NOTE"));
+            if (rst.getString("ASSIGNMENT_TYPE") != null) {
+                String assignmentType = rst.getString("ASSIGNMENT_TYPE");
+                assignment.setType(assignmentType);
+            }
+            assignment.setAssignmentType(rst.getString("ASSIGNMENT_TYPE"));
+            assignment.setSequenceNo(rst.getLong("SEQUENCE_NO"));
+            assignment.setUpdatedDate(getTimestamp(rst, "UPDATED_DATE"));
+            logger.debug("Date from resultset " + rst.getTimestamp("UPDATED_DATE"));
+            logger.debug("UpdatedDate for " + assignment.getTitle() + " DataBase in Datastore "
+                    + getTimestamp(rst, "UPDATED_DATE"));
+            assignment.setCategory(rst.getString("CATEGORY_TYPE"));
+            assignment.setLibraryAssignment((rst.getString("IS_LIBRARY_ASSIGNMENT") == null || (rst
+                    .getString("IS_LIBRARY_ASSIGNMENT") != null && rst.getString(
+                    "IS_LIBRARY_ASSIGNMENT").equals("N"))) ? false : true);
+            // Set manual grade required for assignment.
+            assignment.setManualGradeRequired("Y".equalsIgnoreCase(rst.getString("MANUAL_GRADE_REQUIRED")) ? true : false);
+
+            assignment.setUuid(rst.getString("uuid"));
+            String provider = rst.getString("PROVIDER");
+            assignment.setContentProvider(provider);
+            assignment.setProvider(provider);
+            assignment.setParentSectionId(rst.getLong("PARENT_SECTION_ID"));
+            assignment.setAssignmentReferenceId(Assignment.getNonNullString(rst
+                    .getString("ASSIGNMENT_REFERENCE_ID")));
+            if (rst.getString("PARENT_ASSIGNMENT_ID") != null) {
+                assignment.setParentAssignmentId(rst.getLong("PARENT_ASSIGNMENT_ID"));
+            }
+            logger.debug("Assignment_chat_HAS_CONTENT_POLICIES :" + rst.getString("HAS_CONTENT_POLICIES"));
+            if ("Y".equals(rst.getString("HAS_CONTENT_POLICIES"))) {
+                assignment.setHasContentPolicies(true);
+            } else {
+                assignment.setHasContentPolicies(false);
+            }
+            logger.debug("Assignment_chat_HAS_CONTENT_POLICIES_getHasContentPolicies :" + assignment.getHasContentPolicies());
+            logger.debug("Assignment_chat_ARE_CONTENT_POLICIES_DIRTY :" + rst.getString("ARE_CONTENT_POLICIES_DIRTY"));
+            if ("Y".equals(rst.getString("ARE_CONTENT_POLICIES_DIRTY"))) {
+                assignment.setAreContentPoliciesDirty(true);
+            } else {
+                assignment.setAreContentPoliciesDirty(false);
+            }
+            logger.debug("Assignment_chat_HAS_CONTENT_POLICIES_setAreContentPoliciesDirty :" + assignment.getAreContentPoliciesDirty());
+
+            if ("Y".equals(rst.getString("PEER_REVIEW_ENABLED"))) {
+                assignment.setPeerReview(true);
+                String timestamp = Assignment.getNonNullString(rst
+                        .getString("PEER_REVIEW_DUE_DATE"));
+                if (Assignment.stringIsBlankOrNull(timestamp)) {
+                    assignment.setPeerReviewDueDate(new Date(0));
+                } else {
+                    assignment.setPeerReviewDueDate(getTimestamp(rst, "PEER_REVIEW_DUE_DATE"));
+                }
+            } else {
+                assignment.setPeerReview(false);
+            }
+            // added to add BB_DEPLOY_ON flag value in assignment object.
+
+            if ("Y".equals(rst.getString("BB_IS_DEPLOYED"))) {
+                assignment.setBbDeployed(true);
+            } else {
+                assignment.setBbDeployed(false);
+            }
+            if ("Y".equals(rst.getString("BB_DEPLOY_ON"))) {
+                assignment.setBbDeployOn(true);
+            } else {
+                assignment.setBbDeployOn(false);
+            }
+            if ("Y".equals(rst.getString("LMS_DEPLOY_ON"))) {
+                assignment.setLmsDeployOn(Boolean.TRUE);
+            } else {
+                assignment.setLmsDeployOn(Boolean.FALSE);
+            }
+            if ("Y".equals(rst.getString("LMS_DEPLOYED"))) {
+                assignment.setLmsDeployed(Boolean.TRUE);
+            } else {
+                assignment.setLmsDeployed(Boolean.FALSE);
+            }
+        }
+        return assignment;
+    }
+
+
+
+
+    /*
 
 
     private Assignment getAssignmentWithoutExtensionInfo(ResultSet rst, Assignment assignment) throws SQLException {
@@ -718,8 +1312,8 @@ public class AssignmentCopyDAO implements IAssignmentCopyDAO{
             try {
                 if (rst.getString("ASSIGNMENT_TYPE") != null) {
                     String assignmentType = rst.getString("ASSIGNMENT_TYPE");
-                    if(AssignmentType.contains(assignmentType)){
-                        assignment.setType(AssignmentType.newInstance(assignmentType));
+                    if("contains(assignmentType)){
+                        assignment.setType("newInstance(assignmentType));
                     }else{
                         throw new Exception("Invalid Assignment Type "+rst.getString("ASSIGNMENT_TYPE"));
                     }
@@ -1407,8 +2001,9 @@ public class AssignmentCopyDAO implements IAssignmentCopyDAO{
     private static final String GET_ASSINGMENT_LINE_ITEM = "select ali.*, slp.policy_instance_set_id as sec_ali_pol_inst_id from assignment_line_item ali, assignment_line_item_type alit, sec_line_item_policy_instance slp "
             + "where slp.assign_line_item_id = ali.id and ali.assign_line_item_type_id = alit.id and ali.assignment_id = ? and slp.section_id = ? order by ali.draft_no desc";
 
-    private static final String ADD_LINE_ITEMS_TO_SECTION = "insert into SEC_LINE_ITEM_POLICY_INSTANCE (ID,POLICY_INSTANCE_SET_ID,ASSIGN_LINE_ITEM_ID,SECTION_ID,CREATED_DATE,UPDATED_DATE) ";
-
+    private static final String ADD_LINE_ITEMS_TO_SECTION = "insert into SEC_LINE_ITEM_POLICY_INSTANCE (ID,POLICY_INSTANCE_SET_ID,ASSIGN_LINE_ITEM_ID,SECTION_ID,CREATED_DATE,UPDATED_DATE) "
+            +
+            "values(:id, :policyInstanceSetId, :assignLineItemId, :sectionId, sysdate, sysdate)";
     private static final String GET_POLICY_INSTANCE = "select pis.*, pi.policy_id, pi.value, p.exchane_key, p.name as policy_name, p.is_content_policy from policy_instance_set pis "
             + "left outer join policy_instance pi "
             + "on pis.id = pi.policy_instance_set_id inner join policy p on p.id = pi.policy_id where pis.id = ?";

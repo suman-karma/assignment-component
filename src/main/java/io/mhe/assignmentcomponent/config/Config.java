@@ -25,7 +25,7 @@ public class Config {
     public DataSource getDataSource() throws SQLException {
         String url = "jdbc:oracle:thin:@(DESCRIPTION =(ADDRESS = (PROTOCOL = TCP)(HOST = connect-sprkeqst-db.oci.mh.com)(PORT = 1521))(LOAD_BALANCE = yes)(CONNECT_DATA =(SERVER = DEDICATED)(SERVICE_NAME = sprkeqst.exa.dsiad.oraclevcn.com))(UR = A)))";
         String user = "cmsrep";
-        String password = "";
+        String password = "P$sw0rd4cM3sp";
         OracleDataSource dataSource = new OracleDataSource();
         dataSource.setURL(url);
         dataSource.setUser(user);

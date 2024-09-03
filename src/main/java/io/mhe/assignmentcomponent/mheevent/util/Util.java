@@ -67,12 +67,12 @@ public class Util {
         }
     }
 
-    public static List<String> getAssignmentTypeFromConfig() {
+    /*public static List<String> getAssignmentTypeFromConfig() {
         String assignmentTypesToFg = System.getenv("ASSIGNMENT_TYPES_TO_FG");
         List<String> assignmentTypesList = new ArrayList<String>();
         List<String> assignmentTypesConfigured = Arrays.asList(assignmentTypesToFg.split(","));
         for(String assignmentType : assignmentTypesConfigured){
-            if (EnumUtils.getEnum(AssignmentType.class, assignmentType) != null) {
+            if (EnumUtils.getEnum("class, assignmentType) != null) {
                 assignmentTypesList.add(assignmentType);
             }else{
                 logger.error("Unknown assignment type : {}",assignmentType);
@@ -80,6 +80,6 @@ public class Util {
         }
         logger.debug("assignmentTypesList from Config {}", assignmentTypesList);
         return assignmentTypesList;
-    }
+    }*/
 
 }

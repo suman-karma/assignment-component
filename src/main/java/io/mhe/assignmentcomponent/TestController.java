@@ -101,7 +101,7 @@ public class TestController {
         // call the service.
         try{
             //iIntegrationRestService.copyXWorkFlow(new CopyAssignmentTO[] {srcAssignment} );
-            assignmentCopyService.copyAssignment(copyEvent.getSrcAssignment(),  copyEvent.getOldSectionID(),
+            assignmentCopyService.copyAssignmentsToNewSection(copyEvent.getSrcAssignment(),  copyEvent.getOldSectionID(),
                     copyEvent.getNewSectionID(),
                     copyEvent.getOrigCategoryIds(),
                     copyEvent.getNewCategoryIds(),

@@ -37,21 +37,9 @@ public class EztAssignmentCopyService extends AssignmentCopyService{
                                             Map<Long, Long> oldAndNewOutcomes,
                                             boolean isMarathon) throws Exception {
         try {
-            logger.error("####################### in copyAssignmentsToNewSection srcAssignment {}",srcAssignment);
-            this.copyHMPublicAssignments(new CopyAssignmentTO[] { srcAssignment }, oldSectionID, newSectionID,
-                    origCategoryIds, newCategoryIds, newCourseId, newSectionId);
-            logger.error("####################### in copyAssignmentsToNewSection after set1 srcAssignment {}",srcAssignment);
-            Map<Long, Long> sectionIdsMap = new HashMap<Long, Long>();
-            HashMap assignmentsMapForSection = new HashMap();
 
-            sectionIdsMap.clear();
-            assignmentsMapForSection.clear();
+            doGenericCopyAssignment( srcAssignment,  oldSectionID, newSectionID, origCategoryIds, newCategoryIds, newCourseId, newSectionId);
 
-            sectionIdsMap.put(oldSectionID, newSectionID);
-            assignmentsMapForSection.put(srcAssignment.getAssignmentId(), srcAssignment.getNewAssignmentId());
-            this.copySectionAssignmentXref(sectionIdsMap, assignmentsMapForSection);
-
-            // ezt
 
             iIntegrationRestService.copyXWorkFlow(new
                     CopyAssignmentTO[] { srcAssignment }); // ezt call to do
@@ -88,30 +76,8 @@ public class EztAssignmentCopyService extends AssignmentCopyService{
             // ezt
             iIntegrationRestService.pullRegistrationMultiple( new AssignmentTO(srcAssignment.getAssignmentId(),srcAssignment.getNativeAlaId()));
 
-            // all
-            assignMap.put("" + srcAssignment.getAssignmentId(), "" + srcAssignment.getNewAssignmentId());
-            logger.info("####### modulesMap {}", modulesMap);
-            logger.info("####### assignMap {}", assignMap);
-            this.copyModuleAssignmentMapping(modulesMap, assignMap);
-
-            // other updates
-            try {
-                this.copyCategoryAndOutcomeMappingToMultipleAssignment(assignMap, oldSectionID, newSectionId,
-                        oldAndNewCategories, oldAndNewOutcomes, srcAssignment.getCourseId(),srcAssignment.getNewCourseId()); // this to be completed huge dependicies.
-            } catch (Exception ex) {
-                logger.error("[copyCourse] Error with copyCategoryAndOutcomeMappingToMultipleAssignment: ", ex);
-                throw ex;
-            }
-
-            if (isMarathon) {
-                Map<Long, Long> sourceAndNewAssignmentMap = new HashMap<Long, Long>();
-                Iterator<Map.Entry<String, String>> it = assignMap.entrySet().iterator();
-                while (it.hasNext()) {
-                    Map.Entry<String, String> e = (Map.Entry<String, String>) it.next();
-                    sourceAndNewAssignmentMap.put(Long.parseLong(e.getKey()), Long.parseLong(e.getValue()));
-                }
-                this.copyMarathons(oldSectionID, newSectionId, Long.parseLong(coursePrimaryInstructorId),sourceAndNewAssignmentMap);
-            }
+            doRelatedUpdatesPostCopy( srcAssignment,  oldSectionID, newSectionId, modulesMap, assignMap, coursePrimaryInstructorId,
+                    oldAndNewCategories, oldAndNewOutcomes, isMarathon);
 
             logger.error("####################### in copyAssignmentsToNewSection completed");
         } catch (Exception e) {
@@ -124,6 +90,5 @@ public class EztAssignmentCopyService extends AssignmentCopyService{
     public void copyModuleAssignmentMapping(Map<String, String> modulesMap, Map<String, String> assignmentsMap) {
         assignmentCopyDAO.copyModuleAssignmentMapping(modulesMap, assignmentsMap);
     }
-
 
 }

@@ -28,7 +28,7 @@ public class AssignmentCopyService  implements IAssignmentCopyService{
     private AmazonSQSHelper amazonSQSHelper;
 
 
-    @Override
+    /*@Override
     public void copyAssignment(CopyAssignmentTO srcAssignment, long oldSectionID, long newSectionID, long[] origCategoryIds, long[] newCategoryIds, long newCourseId, long newSectionId, HashMap modulesMap, Map assignMap, String coursePrimaryInstructorId, Map<Long, Long> oldAndNewCategories, Map<Long, Long> oldAndNewOutcomes, boolean isMarathon) throws Exception {
         logger.error("*************** copyAssignment ");
         this.copyAssignmentsToNewSection(srcAssignment,  oldSectionID,
@@ -43,7 +43,7 @@ public class AssignmentCopyService  implements IAssignmentCopyService{
                 oldAndNewCategories,
                 oldAndNewOutcomes,
                 isMarathon);
-    }
+    }*/
 
     public void copyAssignmentsToNewSection(
             CopyAssignmentTO srcAssignment, long oldSectionID,
@@ -53,7 +53,69 @@ public class AssignmentCopyService  implements IAssignmentCopyService{
                                             long newCourseId,
                                             long newSectionId,
                                             HashMap modulesMap,
-                                            Map assignMap, String coursePrimaryInstructorId, Map<Long, Long> oldAndNewCategories, Map<Long, Long> oldAndNewOutcomes, boolean isMarathon) throws Exception {}
+                                            Map assignMap, String coursePrimaryInstructorId, Map<Long, Long> oldAndNewCategories, Map<Long, Long> oldAndNewOutcomes, boolean isMarathon) throws Exception {
+    }
+
+    void doGenericCopyAssignment(CopyAssignmentTO srcAssignment, long oldSectionID,
+                                 long newSectionID,
+                                 long[] origCategoryIds,
+                                 long[] newCategoryIds,
+                                 long newCourseId,
+                                 long newSectionId
+    ) throws Exception{
+
+        logger.error("####################### in copyAssignmentsToNewSection srcAssignment {}",srcAssignment);
+        this.copyHMPublicAssignments(new CopyAssignmentTO[] { srcAssignment }, oldSectionID, newSectionID,
+                origCategoryIds, newCategoryIds, newCourseId, newSectionId);
+        logger.error("####################### in copyAssignmentsToNewSection after set1 srcAssignment {}",srcAssignment);
+        Map<Long, Long> sectionIdsMap = new HashMap<Long, Long>();
+        HashMap assignmentsMapForSection = new HashMap();
+
+        sectionIdsMap.clear();
+        assignmentsMapForSection.clear();
+
+        sectionIdsMap.put(oldSectionID, newSectionID);
+        assignmentsMapForSection.put(srcAssignment.getAssignmentId(), srcAssignment.getNewAssignmentId());
+        this.copySectionAssignmentXref(sectionIdsMap, assignmentsMapForSection);
+    }
+
+    void doRelatedUpdatesPostCopy(CopyAssignmentTO srcAssignment, long oldSectionID,
+                                  long newSectionId,
+                                  HashMap modulesMap,
+                                  Map assignMap,
+                                  String coursePrimaryInstructorId,
+                                  Map<Long, Long> oldAndNewCategories,
+                                  Map<Long, Long> oldAndNewOutcomes,
+                                  boolean isMarathon
+    ) throws Exception{
+        // all
+        assignMap.put("" + srcAssignment.getAssignmentId(), "" + srcAssignment.getNewAssignmentId());
+        logger.info("####### modulesMap {}", modulesMap);
+        logger.info("####### assignMap {}", assignMap);
+        this.copyModuleAssignmentMapping(modulesMap, assignMap);
+
+        // other updates
+        try {
+            this.copyCategoryAndOutcomeMappingToMultipleAssignment(assignMap, oldSectionID, newSectionId,
+                    oldAndNewCategories, oldAndNewOutcomes, srcAssignment.getCourseId(),srcAssignment.getNewCourseId()); // this to be completed huge dependicies.
+        } catch (Exception ex) {
+            logger.error("[copyCourse] Error with copyCategoryAndOutcomeMappingToMultipleAssignment: ", ex);
+            throw ex;
+        }
+
+        if (isMarathon) {
+            Map<Long, Long> sourceAndNewAssignmentMap = new HashMap<Long, Long>();
+            Iterator<Map.Entry<String, String>> it = assignMap.entrySet().iterator();
+            while (it.hasNext()) {
+                Map.Entry<String, String> e = (Map.Entry<String, String>) it.next();
+                sourceAndNewAssignmentMap.put(Long.parseLong(e.getKey()), Long.parseLong(e.getValue()));
+            }
+            this.copyMarathons(oldSectionID, newSectionId, Long.parseLong(coursePrimaryInstructorId),sourceAndNewAssignmentMap);
+        }
+    }
+
+
+
 
     public boolean copyHMPublicAssignments(CopyAssignmentTO[] srcAssignments, long srcSectionId, long dstSectionId, long[] oldCategoryIds,
                                            long[] newCategoryIds,
@@ -125,19 +187,18 @@ public class AssignmentCopyService  implements IAssignmentCopyService{
         assignmentCopyDAO.insertParentAssignmentStatusForAssignment(assignmentId,  parentAssignmentId,  status);
     }
 
-    /*
-    @Override
-    public GroupAssignment getGroupAssignmentById(long assignmentId, long sectionId) {
-        return assignmentCopyDAO.getGroupAssignmentById(assignmentId,sectionId);
-    }
+
+
+
 
     @Override
-    public void copyGroupAssignmentPropertiesForCopyAssignment(CopyAssignment[] ca) {
+    public void copyGroupAssignmentPropertiesForCopyAssignment(CopyAssignmentTO[] ca) {
         assignmentCopyDAO.copyGroupAssignmentPropertiesForCopyAssignment(ca);
     }
 
     @Override
     public Assignment getURLBasedAssignment(long assignmentId) {
+
         return assignmentCopyDAO.getURLBasedAssignment(assignmentId);
     }
 
@@ -146,18 +207,11 @@ public class AssignmentCopyService  implements IAssignmentCopyService{
         return assignmentCopyDAO.getActivityItemsForActivity(id);
     }
 
-
-
     @Override
-    public Assignment getAssignment(long assignmentId) {
-        return null;
+    public void addActivityAndALAInfoForAssignment(Assignment assignment) {
+        assignmentCopyDAO.addActivityAndALAInfoForAssignment(assignment);
     }
 
-    @Override
-    public Product getProduct(String type) {
-        return null;
-    }
-    */
 
     @Override
     public void addActivityItemsToActivity(ActivityItem[] items, long id) {

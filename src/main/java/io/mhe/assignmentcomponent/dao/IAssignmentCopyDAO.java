@@ -60,4 +60,11 @@ public interface IAssignmentCopyDAO {
     void createRubricForAssignment(long assignmentId, CourseLearningOutcomes courseLearningOutcomes) throws Exception;
 
     public void updateLearningOutcomePolicy(long assignmentId, long sectionId, String policyValue) ;
+
+    void copyGroupAssignmentPropertiesForCopyAssignment(CopyAssignmentTO[] ca);
+
+
+    Assignment getURLBasedAssignment(long assignmentId);
+
+    void addActivityAndALAInfoForAssignment(Assignment assignment);
 }

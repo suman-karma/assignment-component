@@ -18,7 +18,7 @@ public class MarathonBucketAssignment implements Model, Visitable<IMarathonVisit
 	private float				minScore			= 0.0f;
 	private long				assignmentOrder;
 	private String				status;
-	//private AssignmentType 		assignmentType 		= AssignmentType.FLAGGED;
+	//private AssignmentType 		assignmentType 		= "FLAGGED;
 	private String 		assignmentType 		= "FLAGGED";
 	private boolean 			manuallyGraded = false;
 	private String 				categoryType;

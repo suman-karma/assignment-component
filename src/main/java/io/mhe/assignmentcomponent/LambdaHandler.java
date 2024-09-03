@@ -6,8 +6,10 @@ import com.amazonaws.services.lambda.runtime.RequestHandler;
 import com.amazonaws.services.lambda.runtime.RequestStreamHandler;
 import com.fasterxml.jackson.core.ObjectCodec;
 import com.google.gson.Gson;
+import io.mhe.assignmentcomponent.service.AssignmentCopyService;
 import io.mhe.assignmentcomponent.service.EztAssignmentCopyService;
 import io.mhe.assignmentcomponent.service.IAssignmentCopyService;
+import io.mhe.assignmentcomponent.service.NonEztAssignmentCopyService;
 import io.mhe.assignmentcomponent.vo.CopyAssignmentEvent;
 
 import org.slf4j.Logger;
@@ -30,10 +32,15 @@ public class LambdaHandler implements RequestStreamHandler {
 
         logger.log("##### Event in lambda" + copyEvent);
         try{
+            AssignmentCopyService assignmentCopyService = null;
             init();
-            EztAssignmentCopyService assignmentCopyService = (EztAssignmentCopyService)ctx.getBean("ASSESMENT");
-            //iIntegrationRestService.copyXWorkFlow(new CopyAssignmentTO[] {srcAssignment} );
-            assignmentCopyService.copyAssignment(copyEvent.getSrcAssignment(),  copyEvent.getOldSectionID(),
+            if("ASSESMENT".equals(copyEvent.getSrcAssignment().getType())){
+                 assignmentCopyService = (EztAssignmentCopyService)ctx.getBean("ASSESMENT");
+            } else {
+                 assignmentCopyService = (NonEztAssignmentCopyService)ctx.getBean("NONASSESMENT");
+            }
+
+            assignmentCopyService.copyAssignmentsToNewSection(copyEvent.getSrcAssignment(),  copyEvent.getOldSectionID(),
                     copyEvent.getNewSectionID(),
                     copyEvent.getOrigCategoryIds(),
                     copyEvent.getNewCategoryIds(),
