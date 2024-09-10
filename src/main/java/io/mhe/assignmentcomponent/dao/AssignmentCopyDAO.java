@@ -715,17 +715,17 @@ public class AssignmentCopyDAO implements IAssignmentCopyDAO{
         // table and making the check at template level
         if ("VIDEO".equals(assignmentObj.getType()) || "ALE".equals(assignmentObj.getType())
                 || "URL_BASED".equals(assignmentObj.getType())
-                ||"FILEATTACH".equals(assignmentObj.getType())
+                || "FILEATTACH".equals(assignmentObj.getType())
                 || "GROUP".equals(assignmentObj.getType())
                 || "WRITING".equals(assignmentObj.getType())
                 || "BLOG".equals(assignmentObj.getType())
                 || "MUZZY_LANE".equals(assignmentObj.getType())
+                || "AVALON".equals(assignmentObj.getType())
+                || "READER17".equals(assignmentObj.getType())
                 || "DISCUSSION".equals(assignmentObj.getType())
                 || "Generic".equals(assignmentObj.getProvider())
                 || (org.apache.commons.lang3.StringUtils.isNotEmpty(assignmentObj.getNativeAlaId())
                 && assignmentObj.getNativeAlaId().startsWith("Generic"))
-              //  || (ProductTemplate.BASIC.equals(productTemplate) || ProductTemplate.ADVANCED.equals(productTemplate)
-              //  || ProductTemplate.DEFAULT.equals(productTemplate))
                 ) {
 
             try {

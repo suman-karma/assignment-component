@@ -43,6 +43,7 @@ public class GenericAssignmentsDao implements IGenericAssignmentsDao{
 	@Autowired
 	private JdbcTemplate jdbcTemplate;
 
+	@Autowired
 	private NamedParameterJdbcTemplate namedParameterJdbcTemplate;
 
 	public static enum CATEGORY_LEVEL {

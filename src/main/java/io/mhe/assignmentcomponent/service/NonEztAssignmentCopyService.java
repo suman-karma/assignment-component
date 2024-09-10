@@ -8,6 +8,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.Arrays;
@@ -28,6 +29,10 @@ public class NonEztAssignmentCopyService extends AssignmentCopyService{
     @Autowired
     private IGenericAssignmentBusinessService genericAssignmentBusinessService;
 
+    @Value("${MUZZY_LTI_POST_URL}")
+    String baseUrl ;
+    @Value("${MUZZY_CONSUMER_KEY}")
+    String consumerKey;
 
     public void copyAssignmentsToNewSection(CopyAssignmentTO srcAssignment, long oldSectionID,
                                             long newSectionID,
@@ -124,16 +129,18 @@ public class NonEztAssignmentCopyService extends AssignmentCopyService{
                     Assignment copyFrom = this.getURLBasedAssignment(srcAssignment.getAssignmentId());
                     Assignment copyTo = this.getURLBasedAssignment(srcAssignment.getNewAssignmentId());
                     String consumer = "MUZZY_LANE".toLowerCase();
-                    String baseUrl = System.getProperty("MUZZY_LTI_POST_URL");
-                    String consumerKey = System.getProperty("MUZZY_CONSUMER_KEY");
+                    //String baseUrl = System.getProperty("MUZZY_LTI_POST_URL");
+                    //String consumerKey = System.getProperty("MUZZY_CONSUMER_KEY");
                     if (logger.isDebugEnabled()) {
                         logger.debug("Calling Muzzy Lane for assignment copy on their side");
                         logger.debug("Source Assignment : {}", copyFrom);
                         logger.debug("Destination Assignment : {}", copyTo);
                     }
-
+                    logger.info("Calling Muzzy Lane for assignment copy on their side baseUrl SS: "+System.getProperty("MUZZY_LTI_POST_URL") + " consumerKey SS: "+System.getProperty("MUZZY_CONSUMER_KEY"));
+                    logger.info("Calling Muzzy Lane for assignment copy on their side baseUrl : "+baseUrl + " consumerKey : "+consumerKey);
                     boolean genericAssignmentCopied = genericAssignmentBusinessService.prepareAndSendRestCallForGenericAssignment(copyFrom,
                             copyTo, consumer, baseUrl, GenericAssignmentConstants.WS_REQUEST_COPY_MODE, consumerKey);
+                    logger.info("default template generic assignment copied status " + genericAssignmentCopied);
                     if (logger.isDebugEnabled()) {
                         logger.debug("default template generic assignment copied status " + genericAssignmentCopied);
                     }

@@ -101,7 +101,7 @@ public class TestController {
         // call the service.
         try{
             //iIntegrationRestService.copyXWorkFlow(new CopyAssignmentTO[] {srcAssignment} );
-            assignmentCopyService.copyAssignmentsToNewSection(copyEvent.getSrcAssignment(),  copyEvent.getOldSectionID(),
+            /*assignmentCopyService.copyAssignmentsToNewSection(copyEvent,  copyEvent.getOldSectionID(),
                     copyEvent.getNewSectionID(),
                     copyEvent.getOrigCategoryIds(),
                     copyEvent.getNewCategoryIds(),
@@ -112,7 +112,7 @@ public class TestController {
                     copyEvent.getCoursePrimaryInstructorId(),
                     copyEvent.getOldAndNewCategories(),
                     copyEvent.getOldAndNewOutcomes(),
-                    copyEvent.isMarathon());
+                    copyEvent.isMarathon());*/
 
         }catch(Exception e){
             logger.error("Exception while copying assignment ", e);
