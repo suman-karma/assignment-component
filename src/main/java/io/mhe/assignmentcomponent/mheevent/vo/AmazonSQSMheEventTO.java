@@ -18,9 +18,7 @@ public void setMheEventPayload(MheEventPayload mheEventPayload) {
 
 @Override
 public String toString() {
-		StringBuilder builder = new StringBuilder(super.toString());
-		builder.append("AmazonSQSMheEventTO [mheEventPayload=").append(mheEventPayload).append("]");
-		return builder.toString();
+    return super.toString() + "AmazonSQSMheEventTO [mheEventPayload=" + mheEventPayload + "]";
 }
 
 }

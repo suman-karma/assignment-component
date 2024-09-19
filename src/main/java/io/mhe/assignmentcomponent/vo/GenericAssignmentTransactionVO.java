@@ -234,49 +234,48 @@ public class GenericAssignmentTransactionVO {
 	 */
 	@Override
 	public String toString() {
-		StringBuilder builder = new StringBuilder();
-		builder.append("GenericAssignmentTransactionVO [serviceConsumerName=");
-		builder.append(serviceConsumerName);
-		builder.append(", serviceProducerName=");
-		builder.append(serviceProducerName);
-		builder.append(", serviceConsumerTransactionId=");
-		builder.append(serviceConsumerTransactionId);
-		builder.append(", serviceProducerTransactionId=");
-		builder.append(serviceProducerTransactionId);
-		builder.append(", sourceSectionId=");
-		builder.append(sourceSectionId);
-		builder.append(", sourceAssignmentId=");
-		builder.append(sourceAssignmentId);
-		builder.append(", destinationSectionId=");
-		builder.append(destinationSectionId);
-		builder.append(", destinationAssignmentId=");
-		builder.append(destinationAssignmentId);
-		builder.append(", primaryInstructorId=");
-		builder.append(primaryInstructorId);
-		builder.append(", secondaryInstructorId=");
-		builder.append(secondaryInstructorId);
-		builder.append(", mode=");
-		builder.append(mode);
-		builder.append(", message=");
-		builder.append(message);
-		builder.append(", status=");
-		builder.append(status);
-		builder.append(", courseTimeZone=");
-		builder.append(courseTimeZone);
-		builder.append(", isbn=");
-		builder.append(isbn);
-		builder.append(", assignmentStartDate=");
-		builder.append(assignmentStartDate);
-		builder.append(", assignmentDueDate=");
-		builder.append(assignmentDueDate);
-		builder.append(", generic_late_submission=");
-		builder.append(generic_late_submission);
-		builder.append(", sourceCourseId=");
-        builder.append(sourceCourseId);
-        builder.append(", destinationCourseId=");
-        builder.append(destinationCourseId);
-		builder.append("]");
-		return builder.toString();
+        String builder = "GenericAssignmentTransactionVO [serviceConsumerName=" +
+                serviceConsumerName +
+                ", serviceProducerName=" +
+                serviceProducerName +
+                ", serviceConsumerTransactionId=" +
+                serviceConsumerTransactionId +
+                ", serviceProducerTransactionId=" +
+                serviceProducerTransactionId +
+                ", sourceSectionId=" +
+                sourceSectionId +
+                ", sourceAssignmentId=" +
+                sourceAssignmentId +
+                ", destinationSectionId=" +
+                destinationSectionId +
+                ", destinationAssignmentId=" +
+                destinationAssignmentId +
+                ", primaryInstructorId=" +
+                primaryInstructorId +
+                ", secondaryInstructorId=" +
+                secondaryInstructorId +
+                ", mode=" +
+                mode +
+                ", message=" +
+                message +
+                ", status=" +
+                status +
+                ", courseTimeZone=" +
+                courseTimeZone +
+                ", isbn=" +
+                isbn +
+                ", assignmentStartDate=" +
+                assignmentStartDate +
+                ", assignmentDueDate=" +
+                assignmentDueDate +
+                ", generic_late_submission=" +
+                generic_late_submission +
+                ", sourceCourseId=" +
+                sourceCourseId +
+                ", destinationCourseId=" +
+                destinationCourseId +
+                "]";
+		return builder;
 	}
 
 	/**

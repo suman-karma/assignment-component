@@ -7,8 +7,8 @@ import org.springframework.stereotype.Service;
 
 @Service
 public interface IGenericAssignmentRemoteServiceInvoker {
-	public boolean sendRestCallForGenericAssignment(Object object, String consumer, String baseUrl, String mode,
-													Class<?> type, HttpMethod method, String consumerKey);
+	boolean sendRestCallForGenericAssignment(Object object, String consumer, String baseUrl, String mode,
+                                             Class<?> type, HttpMethod method, String consumerKey);
 
 
 }

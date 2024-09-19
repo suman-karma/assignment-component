@@ -39,9 +39,9 @@ public enum MheEvent {
 		LEARNER_ASSIGNMENT(MHE_EVENT_SQS_KEY),
 		GRADEBOOK_CONFIGURATION(MHE_EVENT_GRADE_SCORE_SQS_KEY);
 
-		private String value;
+		private final String value;
 		
-		private MheEvent(String value) {
+		MheEvent(String value) {
 			this.value = value;
 		}
 		
@@ -55,9 +55,9 @@ public enum MheEventAction {
 		CREATED("created"), UPDATED("updated"), DELETED("deleted"), NO_ACTION("NoAction"), UPSERT("upsert"),
 		RESTORED("restored");
 
-		private String value;
+		private final String value;
 
-		private MheEventAction(String value) {
+		MheEventAction(String value) {
 			this.value = value;
 		}
 

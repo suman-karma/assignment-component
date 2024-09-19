@@ -9,11 +9,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.ByteArrayInputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
 public final class OAuthUtil {
 
-	private static Logger logger = LoggerFactory.getLogger(OAuthUtil.class);
+	private static final Logger logger = LoggerFactory.getLogger(OAuthUtil.class);
 	private static final String ALPHA_NUMERIC_STRING = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 	
 	private OAuthUtil(){ }
@@ -33,7 +34,7 @@ public final class OAuthUtil {
 		
 		try {
 			if(null != requestBody){
-				requestBodyAsInputStream = new ByteArrayInputStream(requestBody.getBytes("UTF-8"));
+				requestBodyAsInputStream = new ByteArrayInputStream(requestBody.getBytes(StandardCharsets.UTF_8));
 			}
 			authMessage = new OAuthMessage(methodType, uri, parameters.entrySet(), requestBodyAsInputStream);
 			logger.debug("OAuth message{}",authMessage);

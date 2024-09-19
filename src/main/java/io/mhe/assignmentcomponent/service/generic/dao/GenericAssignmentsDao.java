@@ -46,12 +46,12 @@ public class GenericAssignmentsDao implements IGenericAssignmentsDao{
 	@Autowired
 	private NamedParameterJdbcTemplate namedParameterJdbcTemplate;
 
-	public static enum CATEGORY_LEVEL {
+	public enum CATEGORY_LEVEL {
 		SYSTEM("system"), COURSE("course");
 
-		private String description;
+		private final String description;
 
-		private CATEGORY_LEVEL(String description) {
+		CATEGORY_LEVEL(String description) {
 			this.description = description;
 		}
 
@@ -167,10 +167,8 @@ public class GenericAssignmentsDao implements IGenericAssignmentsDao{
 			return isbn;
 		} catch (SQLException e) {
 
-		} finally {
-			//releaseResources(conn, pst, rs);
 		}
-		return isbn;
+        return isbn;
 	}
 
 	@Override
@@ -222,7 +220,7 @@ public class GenericAssignmentsDao implements IGenericAssignmentsDao{
 	public List<HomeworkManagerPolicy> getAssignmentPoliciesFromPolicyInstanceSet(Long assignmentId, Long sectionId)
 			throws RuntimeException {
 		final Map<Long, List<HomeworkManagerPolicy>> assignmentPoliciesMap = getPoliciesForAssignmentsFromPolicyInstanceSet(
-				Arrays.asList(assignmentId), sectionId);
+                Collections.singletonList(assignmentId), sectionId);
 		if (!CollectionUtils.isEmpty(assignmentPoliciesMap)) {
 			return assignmentPoliciesMap.get(assignmentId);
 		}
@@ -263,7 +261,7 @@ public class GenericAssignmentsDao implements IGenericAssignmentsDao{
 			policy.setExchange_key(rs.getString("exchane_key"));
 			policy.setName(rs.getString("policy_name"));
 			policy.setValue(rs.getString("value"));
-			policy.setContentDrivenPolicy("Y".equals(rs.getString("is_content_policy")) ? true : false);
+			policy.setContentDrivenPolicy("Y".equals(rs.getString("is_content_policy")));
 
 			assignmentPoliciesMap.get(assignmentId).add(policy);
 		}
@@ -273,7 +271,7 @@ public class GenericAssignmentsDao implements IGenericAssignmentsDao{
 	public List<HomeworkManagerPolicy> getAssignmentContentPolicies(Long assignmentId, Long sectionId)
 			throws RuntimeException {
 		final Map<Long, List<HomeworkManagerPolicy>> assignmentContentPoliciesMap = getContentPoliciesForAssignments(
-				Arrays.asList(assignmentId), sectionId);
+                Collections.singletonList(assignmentId), sectionId);
 		if (!CollectionUtils.isEmpty(assignmentContentPoliciesMap)) {
 			return assignmentContentPoliciesMap.get(assignmentId);
 		}
@@ -379,7 +377,7 @@ public class GenericAssignmentsDao implements IGenericAssignmentsDao{
 	private HomeworkManagerPolicy getHomeworkManagerPolicyFromResultSet(ResultSet rs) throws SQLException {
 		HomeworkManagerPolicy hmPolicy = new HomeworkManagerPolicy();
 		String exchangeKey = rs.getString("exchane_key");
-		boolean isContentPolicy = ("Y".equals(rs.getString("is_content_policy"))) ? true : false;
+		boolean isContentPolicy = "Y".equals(rs.getString("is_content_policy"));
 		String policyValue = rs.getString("policy_value") == null ? "" : rs.getString("policy_value");
 		Long policyId = rs.getLong("policy_id");
 		hmPolicy.setContentDrivenPolicy(isContentPolicy);

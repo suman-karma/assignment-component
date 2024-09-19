@@ -1,22 +1,10 @@
-/*
- * $Source:
- * /web/cvs/connect-suite/connect/connect-server/src/main/java/com/mhe/connect/business/gradebook/valueobj/Activity
- * .java,v $ $Revision$ $Date$ Activity.java Copyright 2001 The McGraw-Hill Companies. All
- * Rights Reserved Created on Jul 9, 2003, 2:48:52 PM by Kameshwar.
- */
-
 package io.mhe.assignmentcomponent.vo;
 
-//xxx import org.apache.commons.lang.builder.ReflectionToStringBuilder;
-
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
-/**
- * 
- * @author Kameshwar $Author$
- */
 public class Activity implements Model {
 private static final long serialVersionUID  = -2582181326899433424L;
 public static final String REPEATABLE_TYPE_UNLIMIT		= "UNLIMIT";
@@ -237,7 +225,7 @@ public void addActivityItem(ActivityItem item) {
 }
 
 public ActivityItem[] getActivityItems() {
-		return (ActivityItem[]) this.itemList.toArray(new ActivityItem[0]);
+		return this.itemList.toArray(new ActivityItem[0]);
 }
 
 public int getQuestions() {
@@ -249,9 +237,7 @@ public void setQuestions(int questions) {
 }
 
 public void setActivityItems(ActivityItem[] activityItems) {
-		for (int i = 0; i < activityItems.length; i++) {
-			itemList.add(activityItems[i]);
-		}
+    Collections.addAll(itemList, activityItems);
 }
 
 	@Override
@@ -288,9 +274,5 @@ public void setActivityItems(ActivityItem[] activityItems) {
 		this.itemList = activityItems;
 }
 
-/*@Override
-public String toString() {
-		return ReflectionToStringBuilder.toString(this);
-}*/
 
 }

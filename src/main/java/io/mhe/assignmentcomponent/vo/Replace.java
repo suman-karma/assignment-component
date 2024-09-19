@@ -1,15 +1,5 @@
-/*
- * Replace.java
- *
- * Created on June 6, 2003, 9:01 AM
- */
 package io.mhe.assignmentcomponent.vo;
 
-
-/**
- *
- * @author  Kameshwar
- */
 public class Replace {
     /** Creates a new instance of Replace
      * keep it protected

@@ -2,6 +2,8 @@ package io.mhe.assignmentcomponent.mheevent.vo;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 
+import java.util.Objects;
+
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class MheEventDataTO {
 private Object sectionId;
@@ -196,37 +198,35 @@ public void setIsForcedZero(final Boolean isForcedZero){this.isForcedZero = isFo
 
 public boolean equals(final Object o) {
 		if (o == this) return true;
-		if (!(o instanceof MheEventDataTO)) return false;
-		final MheEventDataTO other = (MheEventDataTO) o;
-		if (!other.canEqual((Object) this)) return false;
+		if (!(o instanceof MheEventDataTO other)) return false;
+    if (!other.canEqual(this)) return false;
 		final Object this$sectionId = this.getSectionId();
 		final Object other$sectionId = other.getSectionId();
-		if (this$sectionId == null ? other$sectionId != null : !this$sectionId.equals(other$sectionId)) return false;
+		if (!Objects.equals(this$sectionId, other$sectionId)) return false;
 		final Object this$assignmentId = this.getAssignmentId();
 		final Object other$assignmentId = other.getAssignmentId();
-		if (this$assignmentId == null ? other$assignmentId != null : !this$assignmentId.equals(other$assignmentId)) return false;
+		if (!Objects.equals(this$assignmentId, other$assignmentId)) return false;
 		final Object this$assignmentType = this.getAssignmentType();
 		final Object other$assignmentType = other.getAssignmentType();
-		if (this$assignmentType == null ? other$assignmentType != null : !this$assignmentType.equals(other$assignmentType)) return false;
+		if (!Objects.equals(this$assignmentType, other$assignmentType)) return false;
 		final Object this$studentId = this.getStudentId();
 		final Object other$studentId = other.getStudentId();
-		if (this$studentId == null ? other$studentId != null : !this$studentId.equals(other$studentId)) return false;
+		if (!Objects.equals(this$studentId, other$studentId)) return false;
 		final Object this$attemptNo = this.getAttemptNo();
 		final Object other$attemptNo = other.getAttemptNo();
-		if (this$attemptNo == null ? other$attemptNo != null : !this$attemptNo.equals(other$attemptNo)) return false;
+		if (!Objects.equals(this$attemptNo, other$attemptNo)) return false;
 		final Object this$activityId = this.getActivityId();
 		final Object other$activityId = other.getActivityId();
-		if (this$activityId == null ? other$activityId != null : !this$activityId.equals(other$activityId)) return false;
+		if (!Objects.equals(this$activityId, other$activityId)) return false;
 		final Object this$sectionLineItemActivityId = this.getSectionLineItemActivityId();
 		final Object other$sectionLineItemActivityId = other.getSectionLineItemActivityId();
-		if (this$sectionLineItemActivityId == null ? other$sectionLineItemActivityId != null : !this$sectionLineItemActivityId.equals(other$sectionLineItemActivityId)) return false;
+		if (!Objects.equals(this$sectionLineItemActivityId, other$sectionLineItemActivityId)) return false;
 		final Boolean this$isForcedScore = this.getIsForcedScore();
 		final Boolean other$isForcedScore = other.getIsForcedScore();
-		if (this$isForcedScore == null ? other$isForcedScore != null : !this$isForcedScore.equals(other$isForcedScore)) return false;
+		if (!Objects.equals(this$isForcedScore, other$isForcedScore)) return false;
 		final Boolean this$isForcedZero = this.getIsForcedZero();
 		final Boolean other$isForcedZero = other.getIsForcedZero();
-		if (this$isForcedZero == null ? other$isForcedZero != null : !this$isForcedZero.equals(other$isForcedZero)) return false;
-		return true;
+    return Objects.equals(this$isForcedZero, other$isForcedZero);
 }
 
 

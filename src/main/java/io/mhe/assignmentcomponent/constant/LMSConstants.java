@@ -96,7 +96,7 @@ public interface LMSConstants {
 		MH_CAMPUS_002("Assignment deployment failed"),
 		MH_CAMPUS_003("system error occured");
 
-		private String	description;
+		private final String	description;
 
 		LMS_ASS_DEPLOYMENT_ERR_CODES(String description) {
 			this.description = description;
@@ -106,26 +106,26 @@ public interface LMSConstants {
 			return description;
 		}
 
-	};
+	}
 
-	// LMS Constants and Constant values.
-	final String	LC_LMS_DISPLAY_NAME				= "LMS_DISPLAY_NAME";
-	final String	LC_LMS_CSS_CLASS				= "LMS_CSS_CLASS";
-	final String	LC_LMS_RETURN_TEXT				= "LMS_RETURN_TEXT";
-	final String	LC_LMS_RETURN_BEHAVIOUR			= "LMS_RETURN_BEHAVIOUR";
-	final String	LC_LMS_JS_INCLUDE_PATH			= "LMS_JS_INCLUDE_PATH";
-	final String	LC_LMS_CSS_INCLUDE_PATH			= "LMS_CSS_INCLUDE_PATH";
-	final String	LMS_DEFAULT_NAME				= "LMS";
-	final String	LMS_SCORE_PERCENTAGE			= "percentage";
-	final String	LMS_SCORE_POINTS				= "points";
+    // LMS Constants and Constant values.
+    String	LC_LMS_DISPLAY_NAME				= "LMS_DISPLAY_NAME";
+	String	LC_LMS_CSS_CLASS				= "LMS_CSS_CLASS";
+	String	LC_LMS_RETURN_TEXT				= "LMS_RETURN_TEXT";
+	String	LC_LMS_RETURN_BEHAVIOUR			= "LMS_RETURN_BEHAVIOUR";
+	String	LC_LMS_JS_INCLUDE_PATH			= "LMS_JS_INCLUDE_PATH";
+	String	LC_LMS_CSS_INCLUDE_PATH			= "LMS_CSS_INCLUDE_PATH";
+	String	LMS_DEFAULT_NAME				= "LMS";
+	String	LMS_SCORE_PERCENTAGE			= "percentage";
+	String	LMS_SCORE_POINTS				= "points";
 
 	String			KEY_LMS_DISPLAY_NAME			= "lmsDisplayName";
 
 	String			KEY_CONSTANT_LMS_FEATURE_VO		= "lmsFeatureVO";
 
-	final String	INSTRUCTOR_SECTION_HOME_PATH	= "/connect/hmInstructorSectionHomePortal.do";
+	String	INSTRUCTOR_SECTION_HOME_PATH	= "/connect/hmInstructorSectionHomePortal.do";
 
-	public static enum FEATURE_CONSTANTS {
+	enum FEATURE_CONSTANTS {
 		IS_LMS_MENU_MULTIPLE_OPTIONS("IS_LMS_MENU_MULTIPLE_OPTIONS", "IS_LMS_MENU_MULTIPLE_OPTIONS"),
 		IS_CONFIRMATION_PAGE_ENABLED("IS_CONFIRMATION_PAGE_ENABLED", "Enable / Disable Course Confirmation Pairing page "),
 		IS_RETURNED_TO("IS_RETURNED_TO", "This feature value is to show/hide return to LMS link"),
@@ -276,15 +276,15 @@ public interface LMSConstants {
 	 * 
 	 * 
 	 */
-	public static enum MHCAMPUS_D2L_URL {
+    enum MHCAMPUS_D2L_URL {
 		GRADE_PUSH_URL("/v1/LMS/customer/{customerId}/course/{contextId}/user/{userId}/assignment/{assignmentId}/DeployScoreForConnect"),
 		DEPLOY_ASSIGNMENT_URL("/v1/LMS/customer/{customerId}/course/{contextId}/DeployAssignmentLinkForConnect"),
 		UNDEPLOY_ASSIGNMENT_URL("/v1/LMS/customer/{customerId}/course/{contextId}/assignment/{assignmentId}/DeleteAssignmentLinkForConnect"),
 		MODULE_URL("/v1/LMS/customer/{customerId}/course/{contextId}/GetLinkDestinationsForConnect");
 
-		private String	url;
+		private final String	url;
 
-		private MHCAMPUS_D2L_URL(String url) {
+		MHCAMPUS_D2L_URL(String url) {
 			this.url = url;
 		}
 
@@ -293,14 +293,14 @@ public interface LMSConstants {
 		}
 	}
 
-	public static enum LMS_TYPE_LOOK_UP {
+	enum LMS_TYPE_LOOK_UP {
 		LMS("MHCAMPUS"),
 		D2L("D2L"),
 		CANVAS("CANVAS");
 
-		private String	type;
+		private final String	type;
 
-		private LMS_TYPE_LOOK_UP(String type) {
+		LMS_TYPE_LOOK_UP(String type) {
 			this.type = type;
 		}
 		public String getType() {
@@ -308,40 +308,40 @@ public interface LMSConstants {
 		}
 	}
 	
-	public static final String	LTI_LINK_ID					= "LtiLinkId";
+	String	LTI_LINK_ID					= "LtiLinkId";
 
-	public static final String	ORG_UNIT_ID					= "OrgUnitId";
+	String	ORG_UNIT_ID					= "OrgUnitId";
 
-	public static final String	ID							= "Id";
+	String	ID							= "Id";
 
-	public static final String	TOKEN_KEY					= "tokenKey";
+	String	TOKEN_KEY					= "tokenKey";
 
-	public static final String	X_B							= "x_b";
+	String	X_B							= "x_b";
 
-	public static final String	D2L_VERSION					= "1.3";
+	String	D2L_VERSION					= "1.3";
 
-	public static final String	LMS_QUICKLAUNCH_PLUGIN_URL	= "/lmslaunch/login.htm";
+	String	LMS_QUICKLAUNCH_PLUGIN_URL	= "/lmslaunch/login.htm";
 
-	public static final String	ASSIGNMENT_TOPIC_TYPE		= "3";
+	String	ASSIGNMENT_TOPIC_TYPE		= "3";
 
-	public static final String	ASSIGNMENT_TYPE				= "1";
+	String	ASSIGNMENT_TYPE				= "1";
 
-	public static final String	ASSIGNMENT_ID				= "assignment_id";
+	String	ASSIGNMENT_ID				= "assignment_id";
 
-	public static final String	HTML_DESCRIPTION_TYPE		= "Html";
+	String	HTML_DESCRIPTION_TYPE		= "Html";
 
-	public static final String	NUMERIC_GRADE_TYPE			= "Numeric";
+	String	NUMERIC_GRADE_TYPE			= "Numeric";
 	
-	public static final String LMS_ASSIGNMENT_LAUNCH_SUMMARY= "LMS_ASSIGNMENT_LAUNCH_SUMMARY";
+	String LMS_ASSIGNMENT_LAUNCH_SUMMARY= "LMS_ASSIGNMENT_LAUNCH_SUMMARY";
 
-    public static final String BYPASS_OLD_KAFKA = "bypass.old.kafka";
+    String BYPASS_OLD_KAFKA = "bypass.old.kafka";
     
-    public static final String FALSE = "false";
+    String FALSE = "false";
     
-    public static final String SWITCH_MSK_NOTIFY = "switch.msk.notify";
+    String SWITCH_MSK_NOTIFY = "switch.msk.notify";
 
-	public static final String NOTIFY_TOPIC = "notify.rooms.all.incoming";
+	String NOTIFY_TOPIC = "notify.rooms.all.incoming";
 	
-	public static final String REPLICATE_ASSIGNMENT_DATES = "replicate_assignment_dates";
+	String REPLICATE_ASSIGNMENT_DATES = "replicate_assignment_dates";
 
 }

@@ -1,24 +1,15 @@
 package io.mhe.assignmentcomponent.service.generic.vo;
 
-
-
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Created by IntelliJ IDEA.
- * User: Praveen_Meruga
- * Date: Mar 8, 2007
- * Time: 5:28:44 PM
- * To change this template use File | Settings | File Templates.
- */
 public class HomeworkManagerPolicy implements Model {
 
-	public static enum APX_POLICY_NAME{
+	public enum APX_POLICY_NAME{
 		p_startdate, p_duedate
 	}
 	
-    private long id = 0l;
+    private long id = 0L;
 
     private String name = "";
 
@@ -106,7 +97,7 @@ public class HomeworkManagerPolicy implements Model {
 		this.assignmentType = assignmentType;
 	}
 
-	private long categoryID = 0l;
+	private long categoryID = 0L;
 
 	
 	public boolean isAPXPolicy() {

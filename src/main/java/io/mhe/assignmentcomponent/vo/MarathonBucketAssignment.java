@@ -1,7 +1,5 @@
 package io.mhe.assignmentcomponent.vo;
 
-
-
 import io.mhe.assignmentcomponent.common.IMarathonVisitor;
 import io.mhe.assignmentcomponent.common.constant.Visitable;
 
@@ -18,8 +16,7 @@ public class MarathonBucketAssignment implements Model, Visitable<IMarathonVisit
 	private float				minScore			= 0.0f;
 	private long				assignmentOrder;
 	private String				status;
-	//private AssignmentType 		assignmentType 		= "FLAGGED;
-	private String 		assignmentType 		= "FLAGGED";
+	private String 				assignmentType 		= "FLAGGED";
 	private boolean 			manuallyGraded = false;
 	private String 				categoryType;
 	private String				providerType;

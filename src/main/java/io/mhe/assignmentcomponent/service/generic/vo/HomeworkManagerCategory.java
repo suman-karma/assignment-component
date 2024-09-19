@@ -28,7 +28,7 @@ public class HomeworkManagerCategory implements Model {
     }
 
     private String name = "";
-    private long id = 0l;
+    private long id = 0L;
 
     public String getLevel() {
         return level;
@@ -57,7 +57,7 @@ public class HomeworkManagerCategory implements Model {
     private String instructorid = "0";
 
     private String level = "";
-    private long courseid = 0l;
+    private long courseid = 0L;
     private boolean isPolicyRestructureEnabled;
     
     public boolean isPolicyRestructureEnabled() {

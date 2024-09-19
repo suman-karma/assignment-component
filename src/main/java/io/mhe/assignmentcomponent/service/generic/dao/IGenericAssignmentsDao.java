@@ -10,20 +10,20 @@ import java.util.Map;
 import java.util.Set;
 @Repository
 public interface IGenericAssignmentsDao {
-	public void auditRestCallFailures(String operation,String jsonData,Exception exception,String url,String method);
+	void auditRestCallFailures(String operation, String jsonData, Exception exception, String url, String method);
 
     long getCourseIDBySectionID(long sourceSectionId);
 
 
-    public HMAssignmentCategoryPolicy getPoliciesBySectionAndAssignment(final Long sectionId, final Long assignmentId);
+    HMAssignmentCategoryPolicy getPoliciesBySectionAndAssignment(final Long sectionId, final Long assignmentId);
 
     String getCourseIsbn(long sourceAssignmentId) ;
 
     String getCourseTimeZoneUsingSectionId(long destinationSectionId);
 
-    public OAuthConsumerDetails getConsumerDetail(String consumerKey) throws Exception;
+    OAuthConsumerDetails getConsumerDetail(String consumerKey) throws Exception;
 
-    public void saveHMMessage(Map<String, Long> idMap, Set<Long> failedDesSectionsId, String copyType, String messageKey,
-                              Map<Long, Map<Long, String>> failedSecAndAssignmentMapWithExc, String exceptionDetailsForSectionFailed, Map<String, Boolean> booleanMap)
+    void saveHMMessage(Map<String, Long> idMap, Set<Long> failedDesSectionsId, String copyType, String messageKey,
+                       Map<Long, Map<Long, String>> failedSecAndAssignmentMapWithExc, String exceptionDetailsForSectionFailed, Map<String, Boolean> booleanMap)
             throws Exception;
 }

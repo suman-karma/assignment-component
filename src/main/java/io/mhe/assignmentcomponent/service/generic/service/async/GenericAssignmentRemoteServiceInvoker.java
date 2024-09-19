@@ -42,7 +42,7 @@ public class GenericAssignmentRemoteServiceInvoker implements
 
 	public static final long THOUSAND = 1000;
 
-	private ObjectMapper mapper = new ObjectMapper();
+	private final ObjectMapper mapper = new ObjectMapper();
 
 	@Autowired
 	IGenericAssignmentsDao genericAssignmentsDao;
@@ -96,15 +96,14 @@ public class GenericAssignmentRemoteServiceInvoker implements
 			 * Soft delete connect assignment in case of copy/share flow. We are marking
 			 * assignment as deleted in assignment table. For rest mode we will skip this.
 			 */
-			if (obj instanceof GenericAssignmentTransactionVO) {
+			if (obj instanceof GenericAssignmentTransactionVO txVo) {
 				// Delete assignment.
-				GenericAssignmentTransactionVO txVo = (GenericAssignmentTransactionVO) obj;
-				logger.error("Marking broken assignment with Id {} deleted in mode {} connect.", new Object[] { txVo.getDestinationAssignmentId(), mode });
-				logger.error("Rest call failed in mode : {} for request : {} with response : {} and Exception : {}", new Object[] { mode, txVo, response, GenUtil.getStackTrace(e) });
+                logger.error("Marking broken assignment with Id {} deleted in mode {} connect.", txVo.getDestinationAssignmentId(), mode);
+				logger.error("Rest call failed in mode : {} for request : {} with response : {} and Exception : {}", mode, txVo, response, GenUtil.getStackTrace(e));
 				if (WS_REQUEST_COPY_MODE.equals(mode)) {
 					insertRemoteCallFailureMessages(txVo, e, "generic assignment copy failed", COPY_FEAILURE_MESSAGE_KEY);
 					logger.error("generic assignment call failed for copy");
-					assignmentCopyDAO.deleteMultipleAssignments(Arrays.asList( txVo.getDestinationAssignmentId()));
+					assignmentCopyDAO.deleteMultipleAssignments(Collections.singletonList(txVo.getDestinationAssignmentId()));
 				} else if (WS_REQUEST_SHARE_MODE.equals(mode)) {
 					logger.error("generic assignment call failed for share");
 					throw new Exception("AssignmentShareFailed", e);
@@ -134,8 +133,8 @@ public class GenericAssignmentRemoteServiceInvoker implements
 			}
 			Map<String, Long> idMap = new HashMap<String, Long>();
 			idMap.put("srcSectionId", txVo.getSourceSectionId());
-			idMap.put("jobIdSource", 0l);
-			idMap.put("jobIdDest", 0l);
+			idMap.put("jobIdSource", 0L);
+			idMap.put("jobIdDest", 0L);
 			Map<String, Boolean> booleanMap = new HashMap<String, Boolean>();
 			booleanMap.put("failureNotify", Boolean.TRUE);
 			booleanMap.put("isMarathon",Boolean.FALSE);
@@ -170,9 +169,8 @@ public class GenericAssignmentRemoteServiceInvoker implements
 		restTO.setContentTypee(MediaType.APPLICATION_JSON);
 
 		Map<String, String> paramsMap = null;
-		if (obj instanceof GenericAssignmentTransactionVO) {
-			GenericAssignmentTransactionVO txVo = (GenericAssignmentTransactionVO) obj;
-			if (txVo != null) {
+		if (obj instanceof GenericAssignmentTransactionVO txVo) {
+            if (txVo != null) {
 				paramsMap = new HashMap<String, String>();
 				paramsMap.put(GenericAssignmentConstants.SOURCE_COURSE_ID, String.valueOf(txVo.getSourceCourseId()));
 				paramsMap.put(GenericAssignmentConstants.SOURCE_SECTION_ID, String.valueOf(txVo.getSourceSectionId()));
@@ -201,7 +199,7 @@ public class GenericAssignmentRemoteServiceInvoker implements
         restTO.setHeaderParams(headerParams);
 
         logger.info("Before calling Rest service value set in RestTransferTO object : {}, action {} and base URL {}",
-				new Object[] { restTO, mode, baseUrl });
+                restTO, mode, baseUrl);
 
         return restTO;
 	}

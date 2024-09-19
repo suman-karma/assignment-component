@@ -1,12 +1,5 @@
 package io.mhe.assignmentcomponent.vo;
 
-/**
- * Created by IntelliJ IDEA.
- * User: Tarams
- * Date: May 24, 2008
- * Time: 5:35:20 PM
- * To change this template use File | Settings | File Templates.
- */
 public class WebLink implements Model {
 
 	private String id = "";

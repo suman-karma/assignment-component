@@ -12,7 +12,7 @@ public enum MarathonValidationErrorEnum {
 	ASSIGNMENTS_MIN_SCORE_ERROR("M-005", "Minimum scores are blank or invalid"),
     NEW_ASSIGNMENTS_ERROR("M-006", "There are new assignments that precede active assignments");
 
-	private String	errorCode;
+	private final String	errorCode;
 	private String	errorDescription;
 
 	MarathonValidationErrorEnum(String errorCode, String errorDescription) {

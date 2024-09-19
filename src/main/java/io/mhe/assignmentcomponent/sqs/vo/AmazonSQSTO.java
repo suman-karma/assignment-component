@@ -92,12 +92,11 @@ public void setRequestTimeout(String requestTimeout) {
 
 @Override
 public String toString() {
-		StringBuilder builder = new StringBuilder();
-		builder.append("AmazonSQSTO [sqsEndPoint=").append(sqsEndPoint).append(", sqsRegion=").append(sqsRegion).append(", compressAbove=")
-				.append(compressAbove).append(", payload=").append(payload).append(", accessKey=").append(accessKey).append(", secretKey=")
-				.append(secretKey).append(", connectionReadTimeout=").append(connectionReadTimeout).append(", requestTimeout=")
-				.append(requestTimeout).append("]");
-		return builder.toString();
+    String builder = "AmazonSQSTO [sqsEndPoint=" + sqsEndPoint + ", sqsRegion=" + sqsRegion + ", compressAbove=" +
+            compressAbove + ", payload=" + payload + ", accessKey=" + accessKey + ", secretKey=" +
+            secretKey + ", connectionReadTimeout=" + connectionReadTimeout + ", requestTimeout=" +
+            requestTimeout + "]";
+		return builder;
 }
 
     

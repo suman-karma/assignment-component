@@ -77,7 +77,7 @@ public final class AnswerTolerancePolicyUtil {
 	public static HomeworkManagerPolicy[] decodeAnswerTolerancePolicies(final String fbEztoTolerance) {
 		final List<HomeworkManagerPolicy> policyList = getAnswerTolerancePolicyList(fbEztoTolerance);
 		if (!GenUtil.isNull(policyList)) {
-			return (HomeworkManagerPolicy[]) policyList.toArray(new HomeworkManagerPolicy[policyList.size()]);
+			return policyList.toArray(new HomeworkManagerPolicy[policyList.size()]);
 		}
 		return null;
 	}

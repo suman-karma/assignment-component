@@ -4,29 +4,22 @@ import com.google.gson.Gson;
 import io.mhe.assignmentcomponent.common.util.HashingUtil;
 import io.mhe.assignmentcomponent.common.util.XmlUtils;
 import io.mhe.assignmentcomponent.service.generic.constants.RestConstant;
-import io.mhe.assignmentcomponent.vo.*;
-
-import org.apache.commons.codec.binary.Base64;
-import org.apache.hc.client5.http.classic.HttpClient;
-import org.apache.hc.client5.http.impl.classic.HttpClients;
+import io.mhe.assignmentcomponent.vo.AssignmentTO;
+import io.mhe.assignmentcomponent.vo.CopyAssignmentTO;
+import io.mhe.assignmentcomponent.vo.RestTransferTO;
 import org.jdom.Element;
 import org.jdom.output.XMLOutputter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.http.client.ClientHttpRequestFactory;
-import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
-import java.net.URLEncoder;
 import java.util.Map;
 import java.util.Set;
 
@@ -57,8 +50,8 @@ public class IntegrationRestService implements IIntegrationRestService {
         thePostData.append("&xml=").append(xml);
 
         logger.info(xml);
-        logger.info("### calling ezt copyx {} eztest.pass.phrase {}",eztestUrl+"?"+thePostData.toString() , eztPassPhase);
-        String eztoCopyxResponse = restTemplate.getForObject(eztestUrl+"?"+thePostData.toString() ,  String.class);
+        logger.info("### calling ezt copyx {} eztest.pass.phrase {}",eztestUrl+"?"+ thePostData, eztPassPhase);
+        String eztoCopyxResponse = restTemplate.getForObject(eztestUrl+"?"+ thePostData,  String.class);
 
         logger.info("### respons from ezto : {}", eztoCopyxResponse);
         // check eztoCopyxResponse response from ezto.
@@ -89,8 +82,8 @@ public class IntegrationRestService implements IIntegrationRestService {
         String md5String = HashingUtil.getDigest("todo=pullRegistrationMultiple", eztPassPhase);
         thePostData.append("&key=").append(md5String);
         thePostData.append("&xml=").append(xml);
-        logger.info("######### pull registration multiple call url {} ", eztestUrl+"?"+thePostData.toString());
-        String productCreateResponse = restTemplate.getForObject(eztestUrl+"?"+thePostData.toString() ,  String.class);
+        logger.info("######### pull registration multiple call url {} ", eztestUrl+"?"+ thePostData);
+        String productCreateResponse = restTemplate.getForObject(eztestUrl+"?"+ thePostData,  String.class);
         logger.info("pull registration multiple productCreateResponse {}",productCreateResponse);
         // check productCreateResponse response from ezto. TO DO
 

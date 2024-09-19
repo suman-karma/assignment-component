@@ -6,6 +6,7 @@ import io.mhe.assignmentcomponent.mheevent.util.MheEventConstants.MheEventAction
 
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class MheEventTO {
@@ -82,32 +83,29 @@ private MheEvent mheEvent;
 
     public boolean equals(final Object o) {
         if (o == this) return true;
-        if (!(o instanceof MheEventTO)) return false;
-        final MheEventTO other = (MheEventTO) o;
-        if (!other.canEqual((Object) this)) return false;
+        if (!(o instanceof MheEventTO other)) return false;
+        if (!other.canEqual(this)) return false;
         final Object this$mheEvent = this.getMheEvent();
         final Object other$mheEvent = other.getMheEvent();
-        if (this$mheEvent == null ? other$mheEvent != null : !this$mheEvent.equals(other$mheEvent)) return false;
+        if (!Objects.equals(this$mheEvent, other$mheEvent)) return false;
         final Object this$eventSensedByUserId = this.getEventSensedByUserId();
         final Object other$eventSensedByUserId = other.getEventSensedByUserId();
-        if (this$eventSensedByUserId == null ? other$eventSensedByUserId != null : !this$eventSensedByUserId.equals(other$eventSensedByUserId))
+        if (!Objects.equals(this$eventSensedByUserId, other$eventSensedByUserId))
             return false;
         final Object this$eventSensedDate = this.getEventSensedDate();
         final Object other$eventSensedDate = other.getEventSensedDate();
-        if (this$eventSensedDate == null ? other$eventSensedDate != null : !this$eventSensedDate.equals(other$eventSensedDate))
+        if (!Objects.equals(this$eventSensedDate, other$eventSensedDate))
             return false;
         final Object this$dataList = this.getDataList();
         final Object other$dataList = other.getDataList();
-        if (this$dataList == null ? other$dataList != null : !this$dataList.equals(other$dataList)) return false;
+        if (!Objects.equals(this$dataList, other$dataList)) return false;
         final Object this$trackbackUrl = this.getTrackbackUrl();
         final Object other$trackbackUrl = other.getTrackbackUrl();
-        if (this$trackbackUrl == null ? other$trackbackUrl != null : !this$trackbackUrl.equals(other$trackbackUrl))
+        if (!Objects.equals(this$trackbackUrl, other$trackbackUrl))
             return false;
         final Object this$mheEventAction = this.getMheEventAction();
         final Object other$mheEventAction = other.getMheEventAction();
-        if (this$mheEventAction == null ? other$mheEventAction != null : !this$mheEventAction.equals(other$mheEventAction))
-            return false;
-        return true;
+        return Objects.equals(this$mheEventAction, other$mheEventAction);
     }
 
     protected boolean canEqual(final Object other) {

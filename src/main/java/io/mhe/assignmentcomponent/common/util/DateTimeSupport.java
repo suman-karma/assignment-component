@@ -173,9 +173,7 @@ public abstract class DateTimeSupport {
     private static List<String> generateSupportedTimezones() {
 
         final List<String> supportedTZs = new ArrayList<String>();
-        for (final String tz : TimeZone.getAvailableIDs()) {
-            supportedTZs.add(tz);
-        }
+        Collections.addAll(supportedTZs, TimeZone.getAvailableIDs());
 
         supportedTZs.removeAll(unsupportedTimezones);
 
@@ -261,11 +259,7 @@ public abstract class DateTimeSupport {
 		
 		//return accordingly
 		boolean greaterThanCurrentTime = true;
-		if(diff < 0) {
-			greaterThanCurrentTime = false;
-		}else {
-			greaterThanCurrentTime = true;
-		}
+        greaterThanCurrentTime = diff >= 0;
 		return greaterThanCurrentTime;
 	}
 	
@@ -308,11 +302,8 @@ public abstract class DateTimeSupport {
 	public static boolean checkIfDummyDateInDefaultTimeZone(String date, String dateFormat, boolean isStartDate) {
 		Date defaultEndDate = GenUtil.getDefaultDate(DEFAULT_TIMEZONE, isStartDate);
 		Date inputDate = convertToDate(date, dateFormat);
-		if( inputDate.equals(defaultEndDate) ) {
-			return true;
-		}
-		return false;
-	}
+        return inputDate.equals(defaultEndDate);
+    }
 	
 	public static Date convertDateStringToDateWithoutTimezone(String sourceDateStr, String sourceDateTimeFormat) {
 		DateTimeFormatter formatter = DateTimeFormat.forPattern(sourceDateTimeFormat);

@@ -5,11 +5,11 @@ import java.util.List;
 
 public class HomeworkManagerPolicy implements Model {
 
-	public static enum APX_POLICY_NAME{
+	public enum APX_POLICY_NAME{
 		p_startdate, p_duedate
 	}
 	
-    private long id = 0l;
+    private long id = 0L;
 
     private String name = "";
 
@@ -97,7 +97,7 @@ public class HomeworkManagerPolicy implements Model {
 		this.assignmentType = assignmentType;
 	}
 
-	private long categoryID = 0l;
+	private long categoryID = 0L;
 
 	
 	public boolean isAPXPolicy() {

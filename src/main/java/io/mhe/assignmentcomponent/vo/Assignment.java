@@ -32,7 +32,7 @@ public class Assignment implements Model, Comparable, Cloneable {
 		this.validationView = validationView;
 	}
 
-	private static Logger logger						= LoggerFactory.getLogger(Assignment.class);
+	private static final Logger logger						= LoggerFactory.getLogger(Assignment.class);
 	private String						url							= null;
 	private String						isbn						= null;
 	private String						assignmentReferenceId;
@@ -102,8 +102,8 @@ public class Assignment implements Model, Comparable, Cloneable {
 	private String						prerequisiteId				= null;
 	private float						prerequisiteScore			= 0F;
 	private String						studyGuideFullName			= null;
-	private ArrayList					activityList				= new ArrayList();
-	private Activity[]					activities					= new Activity[0];
+	private final ArrayList					activityList				= new ArrayList();
+	private final Activity[]					activities					= new Activity[0];
 	// unfinished assignment prerequisite ids.
 	private long[]						unfinishedPrerequisites		= new long[0];
 	private float						points						= -1;									// Property
@@ -142,16 +142,16 @@ public class Assignment implements Model, Comparable, Cloneable {
 
 	private boolean						isLibraryAssignment			= false;
 
-	private long							moduleID					= 0l;
+	private long							moduleID					= 0L;
 
 	// WebLinks
 	private WebLink[]						webLinks					= null;
 
-	private long							parentAssignmentId			= 0l;
+	private long							parentAssignmentId			= 0L;
 	
-	private Long							sourceAssignmentId			= 0l;
+	private Long							sourceAssignmentId			= 0L;
 
-	private long							parentSectionId				= 0l;
+	private long							parentSectionId				= 0L;
 
 	//private HMAssignmentCategoryPolicy		policies					= null;
 	private String							contentProvider				= null;
@@ -187,7 +187,7 @@ public class Assignment implements Model, Comparable, Cloneable {
 	private String 						displayTitle;
 	private boolean      				genericAssignment       = false;
 	private Boolean      				isLateSubmissionEnabled;
-	private Date						lateSubmissionDue		= null;
+	private final Date						lateSubmissionDue		= null;
 	private Date						rawLateSubmissionDue    = new Date();
 	
 	public boolean isToolManagedPeerReview() {
@@ -443,13 +443,13 @@ public class Assignment implements Model, Comparable, Cloneable {
 	}
 
 	public void setAssignmentReferenceId(String referenceId) {
-		if (!this.stringIsBlankOrNull(referenceId)) {
+		if (!stringIsBlankOrNull(referenceId)) {
 			this.assignmentReferenceId = referenceId;
 		}
 	}
 
 	public String getAssignmentReferenceId() {
-		return this.getNonNullString(assignmentReferenceId);
+		return getNonNullString(assignmentReferenceId);
 	}
 
 	private boolean						isAssignmentLinked						= false;
@@ -505,7 +505,7 @@ public class Assignment implements Model, Comparable, Cloneable {
 
 	private String						lockedStatus;
 
-	private long						productId								= 0l;
+	private long						productId								= 0L;
 
 	private String						productTemplate;
 
@@ -611,9 +611,9 @@ public class Assignment implements Model, Comparable, Cloneable {
 	}
 
 	// for In class/online, in case of speechCapture assignment
-	public static enum ASSIGNMENT_MODE {
-		INCLASS, ONLINE;
-	}
+	public enum ASSIGNMENT_MODE {
+		INCLASS, ONLINE
+    }
 
 	private String					assignmentMode		= null;
 
@@ -965,7 +965,7 @@ public class Assignment implements Model, Comparable, Cloneable {
 		/**
 		 * TYPE CONFORMANCE CHECK FOR BAD DATA
 		 */
-		if (!this.stringIsBlankOrNull(this._title) && (this._title.indexOf("\n") > -1 || this._title.indexOf("\r") > -1)) {
+		if (!stringIsBlankOrNull(this._title) && (this._title.indexOf("\n") > -1 || this._title.indexOf("\r") > -1)) {
 			this._title = this._title.replaceAll("\n", " ");
 			this._title = this._title.replaceAll("\r", " ");
 		}
@@ -977,7 +977,7 @@ public class Assignment implements Model, Comparable, Cloneable {
 		/**
 		 * TYPE CONFORMANCE CHECK FOR BAD DATA
 		 */
-		if (!this.stringIsBlankOrNull(this._title) && (this._title.indexOf("\n") > -1 || this._title.indexOf("\r") > -1)) {
+		if (!stringIsBlankOrNull(this._title) && (this._title.indexOf("\n") > -1 || this._title.indexOf("\r") > -1)) {
 			this._title = this._title.replaceAll("\n", " ");
 			this._title = this._title.replaceAll("\r", " ");
 		}
@@ -1387,7 +1387,7 @@ public class Assignment implements Model, Comparable, Cloneable {
 		return this.timeRemainingInSeconds;
 	}
 
-	private long	timeRemainingInSeconds	= 0l;
+	private long	timeRemainingInSeconds	= 0L;
 
 	public boolean isPasswordRequired() {
 		return passwordRequired;
@@ -1495,12 +1495,11 @@ public class Assignment implements Model, Comparable, Cloneable {
 
 
 	public int compareTo(Object assignment) {
-		if (!(assignment instanceof Assignment)) {
+		if (!(assignment instanceof Assignment assignmentToCompare)) {
 			throw new ClassCastException("Input object not an assignment");
 		}
 
-		Assignment assignmentToCompare = (Assignment) assignment;
-		if (!(this.getDueDate().equals(assignmentToCompare.getDueDate()))) {
+        if (!(this.getDueDate().equals(assignmentToCompare.getDueDate()))) {
 			if (this.getDueDate().before(assignmentToCompare.getDueDate())) {
 				return -1;
 			}
@@ -2087,11 +2086,11 @@ public class Assignment implements Model, Comparable, Cloneable {
 
 	private String	paletteType	= null;
 
-	public static enum PALETTE_TYPE {
+	public enum PALETTE_TYPE {
 		SIMPLE, COMPLEX
-	};
+	}
 
-	public void setPaletteType(String paletteType) {
+    public void setPaletteType(String paletteType) {
 		if (PALETTE_TYPE.SIMPLE.name().equals(paletteType) || PALETTE_TYPE.COMPLEX.name().equals(paletteType)) {
 			this.paletteType = paletteType;
 		}

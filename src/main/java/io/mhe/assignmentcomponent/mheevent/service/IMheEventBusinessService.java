@@ -9,12 +9,12 @@ public interface IMheEventBusinessService {
  * To perform Trigger of event
  * @param mheEventDataTO
  */
-public void sendMheEventToSQS(MheEventData mheEventDataTO);
+void sendMheEventToSQS(MheEventData mheEventDataTO);
 
 /**
  * To perform Trigger of event
  * @param mheEventDataList
  */
-public void sendMheEventToSQS(List<MheEventData> mheEventDataList);
+void sendMheEventToSQS(List<MheEventData> mheEventDataList);
 
 }

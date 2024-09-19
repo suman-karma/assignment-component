@@ -43,13 +43,13 @@ public class NonForceGradeAssignmentsDaoJdbc implements INonForceGradeAssignment
 	@Autowired(required=true)
 	private NamedParameterJdbcTemplate namedParameterJdbcTemplate;
 	
-	private static Logger logger = LoggerFactory.getLogger(NonForceGradeAssignmentsDaoJdbc.class);
+	private static final Logger logger = LoggerFactory.getLogger(NonForceGradeAssignmentsDaoJdbc.class);
 	
 	@Override
 	public void insertOrUpdateDate(Map<Long,List<Long>> sectionAssignmentsMap) {
 		String replicateAssignmentDates = configurationProvider.getProperty(LMSConstants.REPLICATE_ASSIGNMENT_DATES, LMSConstants.ENABLED);
 		if(!LMSConstants.ENABLED.equalsIgnoreCase(replicateAssignmentDates)) {
-			logger.debug("[ASSIGNMENT_DATE_UPDATE] will not proceed further as replicate_assignment_dates flag is {}", new Object[] {replicateAssignmentDates});
+			logger.debug("[ASSIGNMENT_DATE_UPDATE] will not proceed further as replicate_assignment_dates flag is {}", replicateAssignmentDates);
 			return;
 		}
 		for (Long sectionId : sectionAssignmentsMap.keySet()) {
@@ -61,7 +61,7 @@ public class NonForceGradeAssignmentsDaoJdbc implements INonForceGradeAssignment
 	public void insertOrUpdateDate(List<AssignmentDatesVO> datesList) {
 		String replicateAssignmentDates = configurationProvider.getProperty(LMSConstants.REPLICATE_ASSIGNMENT_DATES, LMSConstants.ENABLED);
 		if(!LMSConstants.ENABLED.equalsIgnoreCase(replicateAssignmentDates)) {
-			logger.debug("[ASSIGNMENT_DATE_UPDATE] will not proceed further as replicate_assignment_dates flag is {}", new Object[] {replicateAssignmentDates});
+			logger.debug("[ASSIGNMENT_DATE_UPDATE] will not proceed further as replicate_assignment_dates flag is {}", replicateAssignmentDates);
 			return;
 		}
 		
@@ -78,10 +78,9 @@ public class NonForceGradeAssignmentsDaoJdbc implements INonForceGradeAssignment
 		try {
 			namedParameterJdbcTemplate.update(queryBuilder.process(insertOrUpdateAssignmentDatesInGradingQueueConditionally), paramMap);
 		} catch (Exception ex) {
-			logger.error("[ASSIGNMENT_DATE_UPDATE] Exception while insert or updating date policies in GRADING_QUEUE_NONFG_ASSIGNMENTS with assignmentId {}, sectionId {}, inputParams {} and exception {}: ",new Object[] { assignVO.getAssignmentId(), assignVO.getSectionId(), paramMap, ex});
+			logger.error("[ASSIGNMENT_DATE_UPDATE] Exception while insert or updating date policies in GRADING_QUEUE_NONFG_ASSIGNMENTS with assignmentId {}, sectionId {}, inputParams {} and exception {}: ", assignVO.getAssignmentId(), assignVO.getSectionId(), paramMap, ex);
 		}
-		return;
-	}
+    }
 
 	private void insertOrUpdateAssignmentDates(Long sectionId, List<Long> assignmentsAbsentInDB) {
 		// TODO
@@ -96,10 +95,9 @@ public class NonForceGradeAssignmentsDaoJdbc implements INonForceGradeAssignment
 			namedParameterJdbcTemplate.update(queryBuilder.process(insertOrUpdateAssignmentDatesInGradingQueue), paramMap);
 		} catch (Exception ex) {
 			// TODO Auto-generated catch block
-			logger.error("[ASSIGNMENT_DATE_UPDATE] Exception while merging date policies in GRADING_QUEUE_NONFG_ASSIGNMENTS with assignmentId {}, sectionId {}, inputParams {} and exception {}: ",new Object[] {assignVO.getAssignmentId(), assignVO.getSectionId(), paramMap, ex});
+			logger.error("[ASSIGNMENT_DATE_UPDATE] Exception while merging date policies in GRADING_QUEUE_NONFG_ASSIGNMENTS with assignmentId {}, sectionId {}, inputParams {} and exception {}: ", assignVO.getAssignmentId(), assignVO.getSectionId(), paramMap, ex);
 		}
-		return;
-	}
+    }
 
 	private Map<String, Object> getParamsForUpsert(AssignmentDatesVO assignVO) {
 		Map<String, Object> paramMap = new HashMap<>();
@@ -144,7 +142,7 @@ public class NonForceGradeAssignmentsDaoJdbc implements INonForceGradeAssignment
 				}
 			});
 		} catch (Exception ex) {
-			logger.error("[ASSIGNMENT_DATE_UPDATE] Exception while getting date policies with assignmentId {}, sectionId {} and exception {}: ",new Object[] {assignmentId, sectionId, ex});
+			logger.error("[ASSIGNMENT_DATE_UPDATE] Exception while getting date policies with assignmentId {}, sectionId {} and exception {}: ", assignmentId, sectionId, ex);
 		}
 		return assignVO;
 	}

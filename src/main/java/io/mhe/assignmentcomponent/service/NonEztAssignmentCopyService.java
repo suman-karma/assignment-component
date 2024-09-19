@@ -11,10 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
+import java.util.*;
 
 @Service("NONASSESMENT")
 public class NonEztAssignmentCopyService extends AssignmentCopyService{
@@ -41,7 +38,6 @@ public class NonEztAssignmentCopyService extends AssignmentCopyService{
                                             long newCourseId,
                                             long newSectionId,
                                             HashMap modulesMap,
-                                            Map assignMap,
                                             String coursePrimaryInstructorId,
                                             Map<Long, Long> oldAndNewCategories,
                                             Map<Long, Long> oldAndNewOutcomes,
@@ -59,10 +55,9 @@ public class NonEztAssignmentCopyService extends AssignmentCopyService{
                 }
             }
 
-            boolean genericAssignment = ("Generic".equals(srcAssignment.getProvider())
+            boolean genericAssignment = "Generic".equals(srcAssignment.getProvider())
                     || (StringUtils.isNotEmpty(srcAssignment.getNativeAlaId())
-                    && srcAssignment.getNativeAlaId().startsWith("Generic"))) ? true
-                    : false;
+                    && srcAssignment.getNativeAlaId().startsWith("Generic"));
 
             if ("Connect".equals(srcAssignment.getProvider()) || "TextFlow".equals(srcAssignment.getProvider())
                     || "ale".equalsIgnoreCase(srcAssignment.getProvider())
@@ -71,7 +66,7 @@ public class NonEztAssignmentCopyService extends AssignmentCopyService{
 
                 if (logger.isDebugEnabled()) {
                     logger.debug("connectAssignments type = {} : assignmentId = {} : newAssignmentId = {}",
-                            new Object[] {srcAssignment.getType(), srcAssignment.getAssignmentId(), srcAssignment.getNewAssignmentId()});
+                            srcAssignment.getType(), srcAssignment.getAssignmentId(), srcAssignment.getNewAssignmentId());
                 }
 
                 if (srcAssignment.getNewAssignmentId() != 0) {
@@ -147,13 +142,13 @@ public class NonEztAssignmentCopyService extends AssignmentCopyService{
                 }
             }
 
-            doRelatedUpdatesPostCopy( srcAssignment,  oldSectionID, newSectionId, modulesMap, assignMap, coursePrimaryInstructorId,
+            doRelatedUpdatesPostCopy( srcAssignment,  oldSectionID, newSectionId, modulesMap, coursePrimaryInstructorId,
                     oldAndNewCategories, oldAndNewOutcomes, isMarathon);
 
 
             logger.error("####################### in copyAssignmentsToNewSection completed");
         } catch (Exception e) {
-            assignmentCopyDAO.deleteMultipleAssignments(Arrays.asList(srcAssignment.getNewAssignmentId()));
+            assignmentCopyDAO.deleteMultipleAssignments(List.of(srcAssignment.getNewAssignmentId()));
             throw e;
         }
     }

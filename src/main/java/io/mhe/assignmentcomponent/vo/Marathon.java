@@ -1,9 +1,11 @@
 package io.mhe.assignmentcomponent.vo;
 
+import java.util.Objects;
+
 public class Marathon implements Model {
 	private static final long	serialVersionUID	= 9149098819762160411L;
 
-	private long				marathonId			= 0l;
+	private long				marathonId			= 0L;
 	private String				marathonTitle;
 	private long				sectionId;
 	private long				userId;
@@ -84,13 +86,9 @@ public class Marathon implements Model {
         }			
 		if (userId != marathon.userId) {
             return false;
-        }			
-		if (marathonTitle != null ? !marathonTitle.equals(marathon.marathonTitle) : marathon.marathonTitle != null) {
-            return false;
-        }			
-
-		return true;
-	}
+        }
+        return Objects.equals(marathonTitle, marathon.marathonTitle);
+    }
 
 	@Override
 	public int hashCode() {
@@ -104,19 +102,18 @@ public class Marathon implements Model {
 
     @Override
     public String toString() {
-        final StringBuilder sb = new StringBuilder("Marathon : {");
-        sb.append("marathonID : ");
-        sb.append(marathonId);
-        sb.append(",");
-        sb.append("marathonTitle : ");
-        sb.append(marathonTitle);
-        sb.append(",");
-        sb.append("sectionId : ");
-        sb.append(sectionId);
-        sb.append(",");
-        sb.append("userId : ");
-        sb.append(userId);
-        sb.append("}");
-		return sb.toString();
+        String sb = "Marathon : {" + "marathonID : " +
+                marathonId +
+                "," +
+                "marathonTitle : " +
+                marathonTitle +
+                "," +
+                "sectionId : " +
+                sectionId +
+                "," +
+                "userId : " +
+                userId +
+                "}";
+		return sb;
     }
 }

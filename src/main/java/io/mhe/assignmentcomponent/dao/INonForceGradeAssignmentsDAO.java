@@ -14,8 +14,8 @@ public interface INonForceGradeAssignmentsDAO {
 	 * Inserts or updates the GRADING_QUEUE_NONFG_ASSIGNMENTS table based on the date policy updates in ASSIGNMENT_POLICY_XREF table
 	 * @param sectionAssignmentsMap
 	 */
-	public void insertOrUpdateDate(Map<Long,List<Long>> sectionAssignmentsMap);
-	public void insertOrUpdateDate(List<AssignmentDatesVO> datesList);
+    void insertOrUpdateDate(Map<Long, List<Long>> sectionAssignmentsMap);
+	void insertOrUpdateDate(List<AssignmentDatesVO> datesList);
 	
 
 }

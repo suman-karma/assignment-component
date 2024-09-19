@@ -1,11 +1,8 @@
 package io.mhe.assignmentcomponent.vo;
 
-
-
 import io.mhe.assignmentcomponent.common.IMarathonVisitor;
 import io.mhe.assignmentcomponent.common.constant.Visitable;
 import org.springframework.util.CollectionUtils;
-
 import java.util.ArrayList;
 import java.util.List;
 

@@ -13,14 +13,10 @@ public class Utility {
         while (st.hasMoreTokens()) {
             b.add(st.nextToken());
         }
-        return (String[]) b.toArray(new String[0]);
+        return b.toArray(new String[0]);
     }
 
     public static boolean isBlankString(String str) {
-        if (str == null || "".equals(str.trim()) || str.equals("null")) {
-            return true;
-        }
-
-        return false;
+        return str == null || "".equals(str.trim()) || str.equals("null");
     }
 }

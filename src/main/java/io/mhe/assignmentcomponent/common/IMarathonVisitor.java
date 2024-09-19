@@ -39,7 +39,7 @@ public interface IMarathonVisitor {
 
 	void visitMarathonAssignment(final MarathonBucketAssignment mAssignment);
 
-	public abstract class AbstractEmptyVisitor implements IMarathonVisitor {
+	abstract class AbstractEmptyVisitor implements IMarathonVisitor {
 		@Override
 		public boolean beforeMarathon(MarathonInfo marathonInfo) {
 			return true;

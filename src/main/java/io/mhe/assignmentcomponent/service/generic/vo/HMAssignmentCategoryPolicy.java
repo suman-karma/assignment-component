@@ -25,8 +25,8 @@ public class HMAssignmentCategoryPolicy extends HomeworkManagerCategoryPolicy {
     public void setSectionId(long sectionId) {
         this.sectionId = sectionId;
     }
-    private long assignment_id = 0l;
-    private long sectionId = 0l;
+    private long assignment_id = 0L;
+    private long sectionId = 0L;
     
     @Override
     public String toString() {

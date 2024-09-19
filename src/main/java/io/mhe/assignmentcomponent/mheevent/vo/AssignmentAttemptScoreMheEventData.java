@@ -3,6 +3,7 @@ package io.mhe.assignmentcomponent.mheevent.vo;
 import io.mhe.assignmentcomponent.mheevent.util.MheEventConstants.MheEventAction;
 
 import java.util.List;
+import java.util.Objects;
 
 public class AssignmentAttemptScoreMheEventData extends MheEventData {
 
@@ -61,25 +62,22 @@ private List<MheEventDataTO> MheEventDataTOList;
 
     public boolean equals(final Object o) {
         if (o == this) return true;
-        if (!(o instanceof AssignmentAttemptScoreMheEventData)) return false;
-        final AssignmentAttemptScoreMheEventData other = (AssignmentAttemptScoreMheEventData) o;
-        if (!other.canEqual((Object) this)) return false;
+        if (!(o instanceof AssignmentAttemptScoreMheEventData other)) return false;
+        if (!other.canEqual(this)) return false;
         final Object this$MheEventDataTOList = this.getMheEventDataTOList();
         final Object other$MheEventDataTOList = other.getMheEventDataTOList();
-        if (this$MheEventDataTOList == null ? other$MheEventDataTOList != null : !this$MheEventDataTOList.equals(other$MheEventDataTOList))
+        if (!Objects.equals(this$MheEventDataTOList, other$MheEventDataTOList))
             return false;
         final Object this$operation = this.getOperation();
         final Object other$operation = other.getOperation();
-        if (this$operation == null ? other$operation != null : !this$operation.equals(other$operation)) return false;
+        if (!Objects.equals(this$operation, other$operation)) return false;
         final Object this$trackbackUrl = this.getTrackbackUrl();
         final Object other$trackbackUrl = other.getTrackbackUrl();
-        if (this$trackbackUrl == null ? other$trackbackUrl != null : !this$trackbackUrl.equals(other$trackbackUrl))
+        if (!Objects.equals(this$trackbackUrl, other$trackbackUrl))
             return false;
         final Object this$mheEventAction = this.getMheEventAction();
         final Object other$mheEventAction = other.getMheEventAction();
-        if (this$mheEventAction == null ? other$mheEventAction != null : !this$mheEventAction.equals(other$mheEventAction))
-            return false;
-        return true;
+        return Objects.equals(this$mheEventAction, other$mheEventAction);
     }
 
     protected boolean canEqual(final Object other) {

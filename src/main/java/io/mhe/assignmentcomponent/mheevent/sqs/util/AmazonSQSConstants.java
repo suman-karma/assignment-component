@@ -37,9 +37,9 @@ enum TRANSACTION_TYPE {
 		adjustCredit(CARDIO_SQS_ADJUST_CREDIT_QUEUE_URL), skillCategory(CARDIO_SQS_SKILL_CATEGORY_QUEUE_URL),
 		ltiaevents(CONNECT_SQS_LTIA_EVENTS_QUEUE_URL);
 
-		private String transactionType;
+		private final String transactionType;
 
-		private TRANSACTION_TYPE(String arg1) {
+		TRANSACTION_TYPE(String arg1) {
 			transactionType = arg1;
 		}
 

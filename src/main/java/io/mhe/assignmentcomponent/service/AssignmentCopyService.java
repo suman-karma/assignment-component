@@ -4,7 +4,6 @@ import io.mhe.assignmentcomponent.dao.IAssignmentCopyDAO;
 import io.mhe.assignmentcomponent.sqs.util.AmazonSQSConstants;
 import io.mhe.assignmentcomponent.sqs.util.AmazonSQSHelper;
 import io.mhe.assignmentcomponent.vo.*;
-import io.micrometer.common.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,27 +22,8 @@ public class AssignmentCopyService  implements IAssignmentCopyService{
     @Autowired
     private IIntegrationRestService iIntegrationRestService;
 
-
     @Autowired
     private AmazonSQSHelper amazonSQSHelper;
-
-
-    /*@Override
-    public void copyAssignment(CopyAssignmentTO srcAssignment, long oldSectionID, long newSectionID, long[] origCategoryIds, long[] newCategoryIds, long newCourseId, long newSectionId, HashMap modulesMap, Map assignMap, String coursePrimaryInstructorId, Map<Long, Long> oldAndNewCategories, Map<Long, Long> oldAndNewOutcomes, boolean isMarathon) throws Exception {
-        logger.error("*************** copyAssignment ");
-        this.copyAssignmentsToNewSection(srcAssignment,  oldSectionID,
-                newSectionID,
-                origCategoryIds,
-                newCategoryIds,
-                newCourseId,
-                newSectionId,
-                modulesMap,
-                assignMap,
-                coursePrimaryInstructorId,
-                oldAndNewCategories,
-                oldAndNewOutcomes,
-                isMarathon);
-    }*/
 
     public void copyAssignmentsToNewSection(
             CopyAssignmentTO srcAssignment, long oldSectionID,
@@ -53,7 +33,7 @@ public class AssignmentCopyService  implements IAssignmentCopyService{
                                             long newCourseId,
                                             long newSectionId,
                                             HashMap modulesMap,
-                                            Map assignMap, String coursePrimaryInstructorId, Map<Long, Long> oldAndNewCategories, Map<Long, Long> oldAndNewOutcomes, boolean isMarathon) throws Exception {
+                                            String coursePrimaryInstructorId, Map<Long, Long> oldAndNewCategories, Map<Long, Long> oldAndNewOutcomes, boolean isMarathon) throws Exception {
     }
 
     void doGenericCopyAssignment(CopyAssignmentTO srcAssignment, long oldSectionID,
@@ -82,13 +62,13 @@ public class AssignmentCopyService  implements IAssignmentCopyService{
     void doRelatedUpdatesPostCopy(CopyAssignmentTO srcAssignment, long oldSectionID,
                                   long newSectionId,
                                   HashMap modulesMap,
-                                  Map assignMap,
                                   String coursePrimaryInstructorId,
                                   Map<Long, Long> oldAndNewCategories,
                                   Map<Long, Long> oldAndNewOutcomes,
                                   boolean isMarathon
     ) throws Exception{
         // all
+        Map assignMap = new HashMap();
         assignMap.put("" + srcAssignment.getAssignmentId(), "" + srcAssignment.getNewAssignmentId());
         logger.info("####### modulesMap {}", modulesMap);
         logger.info("####### assignMap {}", assignMap);
@@ -107,7 +87,7 @@ public class AssignmentCopyService  implements IAssignmentCopyService{
             Map<Long, Long> sourceAndNewAssignmentMap = new HashMap<Long, Long>();
             Iterator<Map.Entry<String, String>> it = assignMap.entrySet().iterator();
             while (it.hasNext()) {
-                Map.Entry<String, String> e = (Map.Entry<String, String>) it.next();
+                Map.Entry<String, String> e = it.next();
                 sourceAndNewAssignmentMap.put(Long.parseLong(e.getKey()), Long.parseLong(e.getValue()));
             }
             this.copyMarathons(oldSectionID, newSectionId, Long.parseLong(coursePrimaryInstructorId),sourceAndNewAssignmentMap);
@@ -230,8 +210,8 @@ public class AssignmentCopyService  implements IAssignmentCopyService{
             throw new Exception("Activity Cannot be Null");
         }
 
-        long actNID = 0l;
-        logger.info(" adding activities existingActivities {}", existingActivities);
+        long actNID = 0L;
+        logger.info("Adding activities existingActivities{}", (Object) existingActivities);
         if (existingActivities != null && existingActivities.length == 1) {
             if (logger.isDebugEnabled()) {
                 logger.debug("addAct = " + activity);
@@ -293,7 +273,7 @@ public class AssignmentCopyService  implements IAssignmentCopyService{
 
     public void copyCategoryAndOutcomeMappingToMultipleAssignment(Map assignmentsMap, long currentSectionId, long destinationSectionId,
                                                                   Map<Long, Long> oldAndNewCategories, Map<Long, Long> oldAndNewOutcomes, long sourceCourseId, long destinationCourseId ) {
-        if(currentSectionId == 0l || destinationSectionId == 0l || assignmentsMap == null || oldAndNewCategories == null || oldAndNewOutcomes == null){
+        if(currentSectionId == 0L || destinationSectionId == 0L || assignmentsMap == null || oldAndNewCategories == null || oldAndNewOutcomes == null){
             throw new UnsupportedOperationException("This API should be used only for OBA" );
         }
         Map <String, String>assignMap = assignmentsMap;
@@ -416,14 +396,14 @@ public class AssignmentCopyService  implements IAssignmentCopyService{
     }
 
     public void createRubricForAssignment(long assignmentId, long sectionId, CourseLearningOutcomes courseLearningOutcomes) throws Exception{
-        if(assignmentId == 0l || sectionId == 0l || courseLearningOutcomes == null){
+        if(assignmentId == 0L || sectionId == 0L || courseLearningOutcomes == null){
             throw new UnsupportedOperationException("This API should be used only for OBA" );
         }
         assignmentCopyDAO.createRubricForAssignment(assignmentId, courseLearningOutcomes);
     }
 
     public CourseLearningOutcomes reviewRubricForAssignment(long assignmentId, long sectionId) {
-        if(assignmentId == 0l || sectionId == 0l ){
+        if(assignmentId == 0L || sectionId == 0L){
             throw new UnsupportedOperationException("This API should be used only for OBA" );
         }
         return assignmentCopyDAO.reviewRubricForAssignment(assignmentId);

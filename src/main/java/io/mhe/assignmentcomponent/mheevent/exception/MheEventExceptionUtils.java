@@ -13,14 +13,14 @@ public class MheEventExceptionUtils {
 // Do not update these error messages as they are used to create dashboards.
 public static final String PREFIX_EXCEPTION_SQS = "Error in writing to Amazon SQS with sqsEnd :";
 private static final String PREFIX_EXCEPTION_MSG = " >>> MHE Event Error : ";
-private static Logger logger = LoggerFactory.getLogger(MheEventExceptionUtils.class);
+private static final Logger logger = LoggerFactory.getLogger(MheEventExceptionUtils.class);
 
 public static void logException(MheEventData eventData, Exception e) {
 		StringBuilder returnStr = new StringBuilder(PREFIX_EXCEPTION_MSG);
 		try {
 			if (eventData != null) {
 				returnStr.append("TrackbackURL :: " + eventData.getTrackbackUrl());
-				returnStr.append("Event details :: " + eventData.toString());
+				returnStr.append("Event details :: " + eventData);
 			}
 		} catch (Exception ex) {
 			returnStr.append("Exception while logging " + ex);

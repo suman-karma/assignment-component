@@ -3,6 +3,7 @@ package io.mhe.assignmentcomponent.common.util;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.StringTokenizer;
@@ -38,7 +39,7 @@ private static final char[] hex = {
  * @param hash array of bytes to convert to hex-string
  * @return generated hex string
  */
-public static final String toHex(byte hash[]) {
+public static String toHex(byte[] hash) {
 		StringBuffer buf = new StringBuffer(hash.length * 2);
 
 		for (int idx = 0; idx < hash.length; idx++) {
@@ -54,7 +55,7 @@ public static final String toHex(byte hash[]) {
  * @param input the data to be digested.
  * @return the md5-digested input
  */
-public static final byte[] digest(byte[] input) {
+public static byte[] digest(byte[] input) {
 		try {
 			MessageDigest md5 = MessageDigest.getInstance(HASH_ALGO_MD5);
 			return md5.digest(input);
@@ -70,7 +71,7 @@ public static final byte[] digest(byte[] input) {
  * @param input2 the second part of the data to be digested.
  * @return the md5-digested input
  */
-public static final byte[] digest(byte[] input1, byte[] input2) {
+public static byte[] digest(byte[] input1, byte[] input2) {
 		try {
 			MessageDigest md5 = MessageDigest.getInstance(HASH_ALGO_MD5);
 			md5.update(input1);
@@ -86,7 +87,7 @@ public static final byte[] digest(byte[] input1, byte[] input2) {
  * @param input the data to be digested.
  * @return the md5-digested input as a hex string
  */
-public static final String hexDigest(byte[] input) {
+public static String hexDigest(byte[] input) {
 		return toHex(digest(input));
 }
 
@@ -97,7 +98,7 @@ public static final String hexDigest(byte[] input) {
  * @param input2 the second part of the data to be digested.
  * @return the md5-digested input as a hex string
  */
-public static final String hexDigest(byte[] input1, byte[] input2) {
+public static String hexDigest(byte[] input1, byte[] input2) {
 		return toHex(digest(input1, input2));
 }
 
@@ -107,12 +108,8 @@ public static final String hexDigest(byte[] input1, byte[] input2) {
  * @param input the data to be digested.
  * @return the md5-digested input as a hex string
  */
-public static final byte[] digest(String input) {
-		try {
-			return digest(input.getBytes(CHAR_SET_UTF_8));
-		} catch (UnsupportedEncodingException uee) {
-			throw new Error(uee.toString(),uee);
-		}
+public static byte[] digest(String input) {
+    return digest(input.getBytes(StandardCharsets.UTF_8));
 }
 
 /**
@@ -121,12 +118,8 @@ public static final byte[] digest(String input) {
  * @param input the data to be digested.
  * @return the md5-digested input as a hex string
  */
-public static final String hexDigest(String input) {
-		try {
-			return toHex(digest(input.getBytes(CHAR_SET_UTF_8)));
-		} catch (UnsupportedEncodingException uee) {
-			throw new Error(uee.toString(),uee);
-		}
+public static String hexDigest(String input) {
+    return toHex(digest(input.getBytes(StandardCharsets.UTF_8)));
 }
 
 public static boolean verifyData(String hash, String data, String pp) {
@@ -137,7 +130,7 @@ public static boolean verifyData(String hash, String data, String pp) {
 public static String getParamValue(String paramName, String queryStr) {
 		StringTokenizer strTok = new StringTokenizer(queryStr, "&");
 		while (strTok.hasMoreTokens()) {
-			String data[] = strTok.nextToken().split("=");
+			String[] data = strTok.nextToken().split("=");
 			if (data[0].equalsIgnoreCase(paramName)) {
 				try {
 					return data[1];
@@ -158,9 +151,9 @@ public static String getParamValue(String paramName, String queryStr) {
  */
 public static String getHexDigest(String qs, String ps) {
 		String msgId = "default";
-		String convertString = ps + "" + qs;
+		String convertString = ps + qs;
 		// digest once
-		byte res[] = HashingUtil.digest(convertString.getBytes());
+		byte[] res = HashingUtil.digest(convertString.getBytes());
 		// digest twice
 		msgId = HashingUtil.hexDigest(res);
 
@@ -176,8 +169,8 @@ public static String getHexDigest(String qs, String ps) {
  */
 public static String getDigest(String qs, String ps) {
 		String msgId = "default";
-		String convertString = ps + "" + qs;
-		byte res[] = HashingUtil.digest(convertString.getBytes());
+		String convertString = ps + qs;
+		byte[] res = HashingUtil.digest(convertString.getBytes());
 		msgId = toHex(res);
 		return msgId;
 }
@@ -252,7 +245,7 @@ private static String convertToHex(byte[] data) {
 		return buf.toString();
 }
 
-public static void main(String args[]) throws UnsupportedEncodingException {
+public static void main(String[] args) throws UnsupportedEncodingException {
 		// this is the common para phrase shared and knowd to MH and PR only
 		String paraphrase = "secret";
 
@@ -260,10 +253,10 @@ public static void main(String args[]) throws UnsupportedEncodingException {
 		// this is generated at MH before forwarding to PR
 		String id = getHexDigest(data, paraphrase);
 		// data is encoded to go as a single http parameter
-		String encData = URLEncoder.encode(data, CHAR_SET_UTF_8);
+		String encData = URLEncoder.encode(data, StandardCharsets.UTF_8);
 		// the query string to the PR gateway is of format
 		// pr will decode the data
-		String dataAtPr = URLDecoder.decode(encData, CHAR_SET_UTF_8);
+		String dataAtPr = URLDecoder.decode(encData, StandardCharsets.UTF_8);
 		// pr verifies the authenticity of data
 		boolean valid = verifyData(id, dataAtPr, paraphrase);
 		// after this PR will do a call to the session verification servlet in CW
@@ -273,7 +266,7 @@ public static void main(String args[]) throws UnsupportedEncodingException {
 		String dataString = "redirect=http://www.highedmath.aleks.com/alekscgi/x/Isl.exe/1SRvFkcbndxQnJi64v-fsmXgmRdgCOsaW1-OWWjU9isg2QYj8qYiXBiLUhIviLHEgilzuSxBizP7nF4nU6yJO6fWhihcIY9Dkqasdwvzvb78pq3ywU72QvdKSHIpQ4h9?1AAYHYnSQ5_LDKt7VKPLbodYCfF0SO9xk2qpEyQUm9kEmeVs&date=2005-08-11";
 		String secretKey = "test123";
 
-		byte messageDigest[] = getKeyedDigest(dataString, secretKey);
+		byte[] messageDigest = getKeyedDigest(dataString, secretKey);
 		String hexstring = toHex(messageDigest);
 
 		/** Get MD5 string */

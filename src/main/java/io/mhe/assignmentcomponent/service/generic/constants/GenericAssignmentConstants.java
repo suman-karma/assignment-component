@@ -3,16 +3,6 @@ package io.mhe.assignmentcomponent.service.generic.constants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.net.URLEncoder;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
-
-/**
- * Constants for Generic Assignment
- * @author Mayank
- * 
- */
 public abstract class GenericAssignmentConstants {
 
 	private final Logger logger = LoggerFactory.getLogger(GenericAssignmentConstants.class);
@@ -20,9 +10,9 @@ public abstract class GenericAssignmentConstants {
 		PUBLISH("publish"),
 		HIDDEN("hidden");
 
-		private String	value;
+		private final String	value;
 
-		private ASSIGNMENT_STATUS_TYPE(String value) {
+		ASSIGNMENT_STATUS_TYPE(String value) {
 			this.value = value;
 		}
 
@@ -131,7 +121,7 @@ public abstract class GenericAssignmentConstants {
 	public static final boolean	TRUE									= true;
 	public static final boolean	FALSE									= false;
 
-	public static final long	ZERO_LONG								= 0l;
+	public static final long	ZERO_LONG								= 0L;
 	public static final int		ZERO_INT								= 0;
 	public static final String	ATTEMPTS								= "attempts";
 	public static final String	ATTEMPT									= "attempt";
@@ -269,34 +259,33 @@ public abstract class GenericAssignmentConstants {
 
 	public static String getAuthValue(String customerKey, String oAuthSignature, String nonce, String timeStamp, String oAuthSigMethod,
 			String version) {
-		StringBuilder buildString = new StringBuilder();
-		buildString.append("OAuth");
-		buildString.append(" ");
-		buildString.append(OAUTH_CONSUMER_KEY);
-		buildString.append("=\"");
-		buildString.append(customerKey);
-		buildString.append("\",");
-		buildString.append(OAUTH_SIGNATURE);
-		buildString.append("=\"");
-		buildString.append(oAuthSignature);
-		buildString.append("\",");
-		buildString.append(OAUTH_NONCE);
-		buildString.append("=\"");
-		buildString.append(nonce);
-		buildString.append("\",");
-		buildString.append(OAUTH_TMESTAMP);
-		buildString.append("=\"");
-		buildString.append(timeStamp);
-		buildString.append("\",");
-		buildString.append(OAUTH_SIGNATURE_METHOD);
-		buildString.append("=\"");
-		buildString.append(oAuthSigMethod);
-		buildString.append("\",");
-		buildString.append("oauth_version");
-		buildString.append("=\"");
-		buildString.append(version);
-		buildString.append("\"");
-		return buildString.toString();
+        String buildString = "OAuth" +
+                " " +
+                OAUTH_CONSUMER_KEY +
+                "=\"" +
+                customerKey +
+                "\"," +
+                OAUTH_SIGNATURE +
+                "=\"" +
+                oAuthSignature +
+                "\"," +
+                OAUTH_NONCE +
+                "=\"" +
+                nonce +
+                "\"," +
+                OAUTH_TMESTAMP +
+                "=\"" +
+                timeStamp +
+                "\"," +
+                OAUTH_SIGNATURE_METHOD +
+                "=\"" +
+                oAuthSigMethod +
+                "\"," +
+                "oauth_version" +
+                "=\"" +
+                version +
+                "\"";
+		return buildString;
 	}
 
 	private static final String	OAUTH_VERSION			= "1.0";

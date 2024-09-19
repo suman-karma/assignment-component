@@ -18,7 +18,7 @@ import java.util.List;
 @Service("mheEventBusinessService")
 public class MheEventBusinessService implements IMheEventBusinessService {
 
-    private Logger logger = LoggerFactory.getLogger(MheEventBusinessService.class);
+    private final Logger logger = LoggerFactory.getLogger(MheEventBusinessService.class);
 
     @Autowired
     ApplicationContext context;

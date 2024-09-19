@@ -32,7 +32,7 @@ import java.util.regex.Pattern;
  * 
  */
 public final class GenUtil {
-	private static Logger logger = LoggerFactory.getLogger(GenUtil.class);
+	private static final Logger logger = LoggerFactory.getLogger(GenUtil.class);
 
 	public static Date getDefaultDate(String timezone, boolean startDate) {
 		String configDate = null;
@@ -116,20 +116,12 @@ public final class GenUtil {
 		}
 	}
 	public static boolean isBlankString(String str) {
-		if (str == null || "".equals(str.trim()) || str.equals("null")) {
-			return true;
-		}
-
-		return false;
-	}
+        return str == null || "".equals(str.trim()) || str.equals("null");
+    }
 
 	public static boolean isBlankArray(Object[] arr) {
-		if (arr == null || arr.length == 0) {
-			return true;
-		}
-
-		return false;
-	}
+        return arr == null || arr.length == 0;
+    }
 
 	public static boolean isNull(Collection<?> collection) {
 		return !(collection != null && collection.size() > 0);
@@ -142,7 +134,7 @@ public final class GenUtil {
 			errStr.append("[Stack Trace Message{" + ex.getMessage() + "}]");
 			StringWriter writer = new StringWriter();
 			ex.printStackTrace(new PrintWriter(writer));
-			errStr.append("[Stack Trace { " + writer.toString() + " } ]");
+			errStr.append("[Stack Trace { " + writer + " } ]");
 		}
 		return errStr.toString();
 	}

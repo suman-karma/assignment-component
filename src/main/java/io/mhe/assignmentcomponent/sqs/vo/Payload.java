@@ -16,10 +16,9 @@ public void setContentTO(ContentTO contentTO) {
 
 @Override
 public String toString() {
-		StringBuilder builder = new StringBuilder();
-		builder.append("Payload [contentTO=");
-		builder.append(contentTO);
-		builder.append("]");
-		return builder.toString();
+    String builder = "Payload [contentTO=" +
+            contentTO +
+            "]";
+		return builder;
 }
 }

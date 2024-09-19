@@ -23,9 +23,9 @@ public enum AssignmentType {
     WRITING2("WRITING2"),
     ;
 
-    private String assignmentType;
+    private final String assignmentType;
 
-    private AssignmentType(String assignmentType) {
+    AssignmentType(String assignmentType) {
         this.assignmentType = assignmentType;
     }
 

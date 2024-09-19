@@ -7,9 +7,9 @@ public enum AssignmentStatusEnum {
 	MARATHON_NOT_ASSOCIATED("2"),
 	MARATHON_ASSOCIATED("3");
 
-	private String statusCode;
+	private final String statusCode;
 
-	private AssignmentStatusEnum(String s) {
+	AssignmentStatusEnum(String s) {
 		statusCode = s;
 	}
 

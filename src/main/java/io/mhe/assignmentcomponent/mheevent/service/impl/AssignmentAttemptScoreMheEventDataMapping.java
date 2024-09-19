@@ -19,9 +19,8 @@ public class AssignmentAttemptScoreMheEventDataMapping extends MheEventDataMappi
 public List<MheEventTO> mapData(MheEventData mheEventData) {
 		List<MheEventTO> mheEventTOList = new ArrayList<MheEventTO>();
 		try {
-			if (mheEventData instanceof AssignmentAttemptScoreMheEventData) {
-				AssignmentAttemptScoreMheEventData attemptEventData = (AssignmentAttemptScoreMheEventData) mheEventData;
-				if (logger.isDebugEnabled()) {
+			if (mheEventData instanceof AssignmentAttemptScoreMheEventData attemptEventData) {
+                if (logger.isDebugEnabled()) {
 					logger.debug(
 							">>>> mheEventDataTO for AssignmentAttemptScoreMheEventData : " + attemptEventData);
 				}

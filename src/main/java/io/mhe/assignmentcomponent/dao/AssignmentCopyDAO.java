@@ -33,7 +33,7 @@ import java.util.stream.Collectors;
 
 @Repository
 public class AssignmentCopyDAO implements IAssignmentCopyDAO{
-    private static Logger logger = LoggerFactory.getLogger(AssignmentCopyDAO.class);
+    private static final Logger logger = LoggerFactory.getLogger(AssignmentCopyDAO.class);
     @Autowired(required=true)
     private NamedParameterJdbcTemplate namedParameterJdbcTemplate;
     @Autowired
@@ -120,11 +120,10 @@ public class AssignmentCopyDAO implements IAssignmentCopyDAO{
     @Override
     public boolean copyHMPublicAssignments(CopyAssignmentTO[] srcAssignments, long srcSectionId, long dstSectionId, long[] oldCategoryIds, long[] newCategoryIds, long newCourseId, long originalCourseId) throws Exception {
 
-        connection = jdbcTemplate.getDataSource().getConnection().unwrap(OracleConnection.class);;
+        connection = jdbcTemplate.getDataSource().getConnection().unwrap(OracleConnection.class);
         SimpleJdbcCall simpleJdbcCall = new SimpleJdbcCall(jdbcTemplate)
                 .withProcedureName("hm_copy_public_assignments")
-                .declareParameters(new SqlParameter[]{
-                        new SqlParameter("srcAssignmentIds", Types.ARRAY),
+                .declareParameters(new SqlParameter("srcAssignmentIds", Types.ARRAY),
                         new SqlParameter("sectionId", Types.NUMERIC),
                         new SqlParameter("newSectionId", Types.NUMERIC),
                         new SqlParameter("oldCategoryId", Types.ARRAY),
@@ -135,8 +134,7 @@ public class AssignmentCopyDAO implements IAssignmentCopyDAO{
                         new SqlParameter("newNativeAlaIds", Types.ARRAY),
                         new SqlParameter("newCourseId", Types.NUMERIC),
                         new SqlParameter("originalCourseId", Types.NUMERIC),
-                        new SqlParameter("isProctringCopyEnabled", Types.VARCHAR),
-                })
+                        new SqlParameter("isProctringCopyEnabled", Types.VARCHAR))
 
                 .returningResultSet("", new RowMapper<String>() {
                     @Override
@@ -224,9 +222,9 @@ public class AssignmentCopyDAO implements IAssignmentCopyDAO{
         mapSectionAssignment.put(dstSectionId,assignmentlist);
         try {
             iNonForceGradeAssignmentsDAO.insertOrUpdateDate(mapSectionAssignment);
-            logger.debug("[ASSIGNMENT_DATE_UPDATE] Successfully added/updated data from AssignmentListsDaoJdbc.copyHMPublicAssignments with mapSectionAssignment:{} ", new Object[] {mapSectionAssignment});
+            logger.debug("[ASSIGNMENT_DATE_UPDATE] Successfully added/updated data from AssignmentListsDaoJdbc.copyHMPublicAssignments with mapSectionAssignment:{} ", mapSectionAssignment);
         }catch (Exception ex) {
-            logger.error("[ASSIGNMENT_DATE_UPDATE] Exception occurs in AssignmentListsDaoJdbc.copyHMPublicAssignments with exception:{} ", new Object[] {ex});
+            logger.error("[ASSIGNMENT_DATE_UPDATE] Exception occurs in AssignmentListsDaoJdbc.copyHMPublicAssignments with exception:{} ", ex);
         }
       return true;
     }
@@ -253,7 +251,7 @@ public class AssignmentCopyDAO implements IAssignmentCopyDAO{
             long[] dstAssignmentIds = new long[assignmentsMap.size()];
             i = 0;
             while (it.hasNext()) {
-                Map.Entry<Long, Long> e = (Map.Entry) it.next();
+                Map.Entry<Long, Long> e = it.next();
                 srcAssignmentIds[i] = e.getKey();
                 dstAssignmentIds[i] = e.getValue();
                 i++;
@@ -264,12 +262,10 @@ public class AssignmentCopyDAO implements IAssignmentCopyDAO{
             SimpleJdbcCall simpleJdbcCall = new SimpleJdbcCall(jdbcTemplate)
                 //.withSchemaName("")
                 .withProcedureName("copy_section_assignment_xref")
-                .declareParameters(new SqlParameter[]{
-                        new SqlParameter("srcSectionIds", Types.ARRAY),
+                .declareParameters(new SqlParameter("srcSectionIds", Types.ARRAY),
                         new SqlParameter("dstSectionIds", Types.ARRAY),
                         new SqlParameter("srcAssignmentIds", Types.ARRAY),
-                        new SqlParameter("dstAssignmentIds", Types.ARRAY)
-                });
+                        new SqlParameter("dstAssignmentIds", Types.ARRAY));
 
             ArrayDescriptor descriptor = ArrayDescriptor.createDescriptor("NUM_ARRAY", connection);
             ARRAY srcSectionIdsArray = new ARRAY(descriptor, connection, srcSectionIds);
@@ -320,16 +316,15 @@ public class AssignmentCopyDAO implements IAssignmentCopyDAO{
                         act.setEndNote(rs.getString("END_NOTE") != null ? rs.getString("END_NOTE") : "");
                         act.setAlaManagerID(rs.getLong("ALAMGR_ID"));
                         act.setMaxScore(rs.getFloat("MAX_SCORE"));
-                        act.setWeightBased((rs.getString("WEIGHT_YN") != null && rs
-                                .getString("WEIGHT_YN").equalsIgnoreCase("y")) ? true : false);
+                        act.setWeightBased(rs.getString("WEIGHT_YN") != null && rs
+                                .getString("WEIGHT_YN").equalsIgnoreCase("y"));
                         act.setQuestions(rs.getInt("NUM_QUESTIONS"));
                         act.setAvailableQuestions(rs.getInt("AVAILABLE_QUESTIONS"));
                         String type = rs.getString("ACTIVITY_TYPE");
                         if (type != null) {
                             act.setType(type);
                         }
-                        act.setRepeatable(rs.getString("REPEATABLE_YN").equalsIgnoreCase("Y") ? true
-                                : false);
+                        act.setRepeatable(rs.getString("REPEATABLE_YN").equalsIgnoreCase("Y"));
                         act.setAssignmentID(Long.parseLong(rs.getString("ASSIGNMENT_ID")));
 
                         // Fix for bug # 3129.
@@ -338,12 +333,11 @@ public class AssignmentCopyDAO implements IAssignmentCopyDAO{
                         act.setRepeatableType(rs.getString("repeatable_type"));
                         act.setRepeatableValue(rs.getLong("repeatable_value"));
                         // Copying the Time Allocated
-                        act.settimable(rs.getString("TIMABLE_YN").equalsIgnoreCase("Y") ? true : false);
+                        act.settimable(rs.getString("TIMABLE_YN").equalsIgnoreCase("Y"));
                         if (act.istimable()) {
                             act.setTimeAllocatedInSeconds(rs.getInt("TIME_ALLOCATED"));
                         }
-                        act.setPrintable(((rs.getString("PRINTABLE_YN")).equalsIgnoreCase("Y") ? true
-                                : false));
+                        act.setPrintable(((rs.getString("PRINTABLE_YN")).equalsIgnoreCase("Y")));
 
                         // Adding native id information.
                         act.setNativeAlaId(rs.getString("NATIVE_ALA_ID"));
@@ -352,7 +346,7 @@ public class AssignmentCopyDAO implements IAssignmentCopyDAO{
                         return act;
                     }
                 });
-        return (Activity[]) actSet.toArray(new Activity[0]);
+        return actSet.toArray(new Activity[0]);
     }
 
     @Override
@@ -387,14 +381,7 @@ public class AssignmentCopyDAO implements IAssignmentCopyDAO{
                             // BEgin Set Native ID and ALA Content Provider
                             logger.debug("Native ala id " + rst.getString("NATIVE_ALA_ID"));
                             activityItem.setNativeAlaId(rst.getString("NATIVE_ALA_ID"));
-                            if (rst.getString("scoring") != null && rst.getString("scoring").equalsIgnoreCase("manual"))
-                            {
-                                activityItem.setManualGradingRequired(true);
-                            }
-                            else
-                            {
-                                activityItem.setManualGradingRequired(false);
-                            }
+                            activityItem.setManualGradingRequired(rst.getString("scoring") != null && rst.getString("scoring").equalsIgnoreCase("manual"));
 
                             return activityItem;
                         }
@@ -570,7 +557,7 @@ public class AssignmentCopyDAO implements IAssignmentCopyDAO{
         if (null == activityItems) {
             activityItems = new ArrayList<ActivityItem>();
         }
-        return (ActivityItem[]) activityItems.toArray(new ActivityItem[0]);
+        return activityItems.toArray(new ActivityItem[0]);
     }
 
     @Override
@@ -619,7 +606,7 @@ public class AssignmentCopyDAO implements IAssignmentCopyDAO{
     public void insertParentAssignmentStatusForAssignment(long assignmentId, long parentAssignmentId, String status) {
         logger.debug(
                 "AssignmentsDaoJdbc : insertParentAssignmentStatusForAssignment: Input param assignmentId {}, parent_assignment_id{} and status {}",
-                new Object[] { assignmentId, parentAssignmentId, status });
+                assignmentId, parentAssignmentId, status);
 
         Map<String, Object> parentStatusForAssignment = new HashMap<String, Object>();
         try {
@@ -666,8 +653,6 @@ public class AssignmentCopyDAO implements IAssignmentCopyDAO{
             }
             logger.error("SQLException Message:" + e.getMessage());
             // throw exception
-        } finally {
-            // handle connection clousure
         }
 
     }
@@ -708,7 +693,7 @@ public class AssignmentCopyDAO implements IAssignmentCopyDAO{
 
     @Override
     public void addActivityAndALAInfoForAssignment(Assignment assignmentObj) {
-        Activity activity = this.prepareActivityWithActivityItems(assignmentObj);
+        Activity activity = prepareActivityWithActivityItems(assignmentObj);
        // why fetch using for all basic advanced and default.
         //logger.debug("addActivityAndALAInfoForAssignment assignmentObj.getType()"+assignmentObj.getType()+" Product type: "+  productTemplate);
         // Have Removed Check for LabSmat/LearnSmart and other assignment types which are configured through Products
@@ -762,7 +747,7 @@ public class AssignmentCopyDAO implements IAssignmentCopyDAO{
             throw new Exception("Activity Cannot be Null");
         }
 
-        long actNID = 0l;
+        long actNID = 0L;
 
         if (existingActivities != null && existingActivities.length == 1) {
             if (logger.isDebugEnabled()) {
@@ -813,7 +798,7 @@ public class AssignmentCopyDAO implements IAssignmentCopyDAO{
             activity.setTitle("dummy");
         }
         activity.setAssignmentID(assignment.getID());
-        activity.setAlaManagerID(0l);
+        activity.setAlaManagerID(0L);
         activity.setWeightBased(false);
         activity.setRepeatable(false);
         activity.setBeginNote(" ");
@@ -979,7 +964,7 @@ public class AssignmentCopyDAO implements IAssignmentCopyDAO{
                         return getALAItem(rs);
                     }
                 });
-        return (ActivityItem[]) activityItemList.toArray(new ActivityItem[0]);
+        return activityItemList.toArray(new ActivityItem[0]);
     }
 
     private ActivityItem getALAItem(ResultSet rs) throws SQLException {
@@ -1010,7 +995,7 @@ public class AssignmentCopyDAO implements IAssignmentCopyDAO{
 
         return this.namedParameterJdbcTemplate.query(GET_ALAMGRID_FOR_ASSIGNMENT_IDS, paramMap,
                 new ResultSetExtractor<Map<String, String>>() {
-                    private Map<String, String> alaMgrIdMap = new HashMap<String, String>();
+                    private final Map<String, String> alaMgrIdMap = new HashMap<String, String>();
 
                     @Override
                     public Map<String, String> extractData(ResultSet rs) throws SQLException {
@@ -1043,7 +1028,7 @@ public class AssignmentCopyDAO implements IAssignmentCopyDAO{
                 assignmt = getAssignment(rst, true);
                 if ("VIDEO".equalsIgnoreCase(rst.getString("ASSIGNMENT_TYPE"))) {
                     assignmt.setSelfReview("Y".equalsIgnoreCase(rst
-                            .getString("SELFREVIEW_FROM_SAX")) ? true : false);
+                            .getString("SELFREVIEW_FROM_SAX")));
                     assignmt.setSelfRubricId(rst.getLong("SELF_REVIEW_RUBRIC_ID"));
                     assignmt.setInstRubricId(rst.getLong("INSTRUCTOR_REVIEW_RUBRIC_ID"));
                     if ("Y".equalsIgnoreCase(rst.getString("PEERREVIEW_FROM_SAX"))) {
@@ -1094,18 +1079,10 @@ public class AssignmentCopyDAO implements IAssignmentCopyDAO{
                  */
 
                 // d2l change
-                if ("Y".equals(rst.getString("lms_deployed"))) {
-                    assignmt.setLmsDeployed(true);
-                } else {
-                    assignmt.setLmsDeployed(false);
-                }
-                if ("Y".equals(rst.getString("lms_deploy_on"))) {
-                    assignmt.setLmsDeployOn(true);
-                } else {
-                    assignmt.setLmsDeployOn(false);
-                }
+                assignmt.setLmsDeployed("Y".equals(rst.getString("lms_deployed")));
+                assignmt.setLmsDeployOn("Y".equals(rst.getString("lms_deploy_on")));
 
-                boolean proctoringEnabled = "Y".equals(rst.getString("proctoring_enabled")) ? true : false;
+                boolean proctoringEnabled = "Y".equals(rst.getString("proctoring_enabled"));
                 assignmt.setProctoringEnabled(proctoringEnabled);
 
             } else {
@@ -1135,7 +1112,7 @@ public class AssignmentCopyDAO implements IAssignmentCopyDAO{
     }
 
     private Assignment getAssignmentWithoutExtensionInfo(ResultSet rst, boolean getPrerequisite)
-            throws SQLException, Exception {
+            throws Exception {
         return getAssignmentWithoutExtensionInfo(rst, new Assignment());
     }
 
@@ -1153,8 +1130,7 @@ public class AssignmentCopyDAO implements IAssignmentCopyDAO{
             assignment.setDueDate(getTimestamp(rst, "DUE_DATE"));
             assignment.setWeight(rst.getFloat("WEIGHT"));
             logger.debug("AssignmentsDaoJdbc_getAssignmentWithoutExtensionInfo_IS_CHAT_ASSIGNMENT from DB:" + rst.getString("IS_CHAT_ASSIGNMENT"));
-            assignment.setChatAssignment(("Y".equals(rst.getString("IS_CHAT_ASSIGNMENT"))) ? true
-                    : false);
+            assignment.setChatAssignment("Y".equals(rst.getString("IS_CHAT_ASSIGNMENT")));
             logger.debug("AssignmentsDaoJdbc_getAssignmentWithoutExtensionInfo_IS_CHAT_ASSIGNMENT:" + assignment.isChatAssignment());
 
             if (rst.getString("ACCESS_LEVEL") != null) {
@@ -1173,11 +1149,7 @@ public class AssignmentCopyDAO implements IAssignmentCopyDAO{
                 assignment.setCategory_id(rst.getLong("CATEGORY_ID"));
             }
 
-            if (rst.getString("SHOW_HIDE") != null && "N".equals(rst.getString("SHOW_HIDE"))) {
-                assignment.setShowAssignment(false);
-            } else {
-                assignment.setShowAssignment(true);
-            }
+            assignment.setShowAssignment(rst.getString("SHOW_HIDE") == null || !"N".equals(rst.getString("SHOW_HIDE")));
             assignment.setProducerId(GenUtil.parseLong(rst.getString("PRODUCER_ID"), 0L));
             assignment.setConsumerId(GenUtil.parseLong(rst.getString("CONSUMER_ID"), 0L));
             assignment.setNote(rst.getString("ASSIGNMENT_NOTE"));
@@ -1192,11 +1164,11 @@ public class AssignmentCopyDAO implements IAssignmentCopyDAO{
             logger.debug("UpdatedDate for " + assignment.getTitle() + " DataBase in Datastore "
                     + getTimestamp(rst, "UPDATED_DATE"));
             assignment.setCategory(rst.getString("CATEGORY_TYPE"));
-            assignment.setLibraryAssignment((rst.getString("IS_LIBRARY_ASSIGNMENT") == null || (rst
-                    .getString("IS_LIBRARY_ASSIGNMENT") != null && rst.getString(
-                    "IS_LIBRARY_ASSIGNMENT").equals("N"))) ? false : true);
+            assignment.setLibraryAssignment(rst.getString("IS_LIBRARY_ASSIGNMENT") != null && (rst
+                    .getString("IS_LIBRARY_ASSIGNMENT") == null || !rst.getString(
+                    "IS_LIBRARY_ASSIGNMENT").equals("N")));
             // Set manual grade required for assignment.
-            assignment.setManualGradeRequired("Y".equalsIgnoreCase(rst.getString("MANUAL_GRADE_REQUIRED")) ? true : false);
+            assignment.setManualGradeRequired("Y".equalsIgnoreCase(rst.getString("MANUAL_GRADE_REQUIRED")));
 
             assignment.setUuid(rst.getString("uuid"));
             String provider = rst.getString("PROVIDER");
@@ -1209,18 +1181,10 @@ public class AssignmentCopyDAO implements IAssignmentCopyDAO{
                 assignment.setParentAssignmentId(rst.getLong("PARENT_ASSIGNMENT_ID"));
             }
             logger.debug("Assignment_chat_HAS_CONTENT_POLICIES :" + rst.getString("HAS_CONTENT_POLICIES"));
-            if ("Y".equals(rst.getString("HAS_CONTENT_POLICIES"))) {
-                assignment.setHasContentPolicies(true);
-            } else {
-                assignment.setHasContentPolicies(false);
-            }
+            assignment.setHasContentPolicies("Y".equals(rst.getString("HAS_CONTENT_POLICIES")));
             logger.debug("Assignment_chat_HAS_CONTENT_POLICIES_getHasContentPolicies :" + assignment.getHasContentPolicies());
             logger.debug("Assignment_chat_ARE_CONTENT_POLICIES_DIRTY :" + rst.getString("ARE_CONTENT_POLICIES_DIRTY"));
-            if ("Y".equals(rst.getString("ARE_CONTENT_POLICIES_DIRTY"))) {
-                assignment.setAreContentPoliciesDirty(true);
-            } else {
-                assignment.setAreContentPoliciesDirty(false);
-            }
+            assignment.setAreContentPoliciesDirty("Y".equals(rst.getString("ARE_CONTENT_POLICIES_DIRTY")));
             logger.debug("Assignment_chat_HAS_CONTENT_POLICIES_setAreContentPoliciesDirty :" + assignment.getAreContentPoliciesDirty());
 
             if ("Y".equals(rst.getString("PEER_REVIEW_ENABLED"))) {
@@ -1237,16 +1201,8 @@ public class AssignmentCopyDAO implements IAssignmentCopyDAO{
             }
             // added to add BB_DEPLOY_ON flag value in assignment object.
 
-            if ("Y".equals(rst.getString("BB_IS_DEPLOYED"))) {
-                assignment.setBbDeployed(true);
-            } else {
-                assignment.setBbDeployed(false);
-            }
-            if ("Y".equals(rst.getString("BB_DEPLOY_ON"))) {
-                assignment.setBbDeployOn(true);
-            } else {
-                assignment.setBbDeployOn(false);
-            }
+            assignment.setBbDeployed("Y".equals(rst.getString("BB_IS_DEPLOYED")));
+            assignment.setBbDeployOn("Y".equals(rst.getString("BB_DEPLOY_ON")));
             if ("Y".equals(rst.getString("LMS_DEPLOY_ON"))) {
                 assignment.setLmsDeployOn(Boolean.TRUE);
             } else {
@@ -1444,7 +1400,7 @@ public class AssignmentCopyDAO implements IAssignmentCopyDAO{
             long[] dstAssignmentIds = new long[assignmentsMap.size()];
             i = 0;
             while (it.hasNext()) {
-                Map.Entry<String, String> e = (Map.Entry) it.next();
+                Map.Entry<String, String> e = it.next();
                 srcAssignmentIds[i] = Long.parseLong(e.getKey());
                 dstAssignmentIds[i] = Long.parseLong(e.getValue());
                 i++;
@@ -1455,12 +1411,10 @@ public class AssignmentCopyDAO implements IAssignmentCopyDAO{
             SimpleJdbcCall simpleJdbcCall = new SimpleJdbcCall(jdbcTemplate)
                     //.withSchemaName("")
                     .withProcedureName("copy_module_assignment_mapping")
-                    .declareParameters(new SqlParameter[]{
-                            new SqlParameter("srcModuleIds", Types.ARRAY),
+                    .declareParameters(new SqlParameter("srcModuleIds", Types.ARRAY),
                             new SqlParameter("dstModuleIds", Types.ARRAY),
                             new SqlParameter("srcAssignmentIds", Types.ARRAY),
-                            new SqlParameter("dstAssignmentIds", Types.ARRAY)
-                    });
+                            new SqlParameter("dstAssignmentIds", Types.ARRAY));
 
             ArrayDescriptor descriptor = ArrayDescriptor.createDescriptor("NUM_ARRAY", connection);
             ARRAY srcModuleIdsArray = new ARRAY(descriptor, connection, srcModuleIds);
@@ -1713,7 +1667,7 @@ public class AssignmentCopyDAO implements IAssignmentCopyDAO{
                     new ResultSetExtractor<String>() {
                         @Override
                         public String extractData(ResultSet rst) throws SQLException {
-                            long prevBucketID = 0l;
+                            long prevBucketID = 0L;
                             MarathonBucket mBucket = null;
                             List<MarathonBucketAssignment> marathonBucketAssignmentList = null;
                             while (rst.next()) {
@@ -1794,7 +1748,7 @@ public class AssignmentCopyDAO implements IAssignmentCopyDAO{
         return resultSet.getTimestamp(columnName, calendar);
     }
 
-    private ThreadLocal<SimpleDateFormat> dateFormat = new ThreadLocal<SimpleDateFormat>() {
+    private final ThreadLocal<SimpleDateFormat> dateFormat = new ThreadLocal<SimpleDateFormat>() {
         @Override
         protected SimpleDateFormat initialValue() {
             return new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
@@ -1832,7 +1786,7 @@ public class AssignmentCopyDAO implements IAssignmentCopyDAO{
                                     // TODO :
                                     date = dateFormat.get().parse(rs.getString("VALUE"));
                                 } catch (ParseException e1) {
-                                    logger.warn(String.format("Error during parsing %s for assignment %d"), marker, assignmentID);
+                                    logger.warn("Error during parsing %s for assignment %d", marker, assignmentID);
                                 }
                                 if (date != null) {
                                     result.put(assignmentID, marker, date);
@@ -1919,7 +1873,7 @@ public class AssignmentCopyDAO implements IAssignmentCopyDAO{
         return namedParameterJdbcTemplate.query(GET_CATEGORIES_BY_ASSIGNMENT_ID, paramMap,
                 new ResultSetExtractor<CourseLearningOutcomes>() {
                     public CourseLearningOutcomes extractData(ResultSet rst) throws SQLException {
-                        long previousCategoryId = 0l, currentCategoryId = 0l, previousOutcomeId = 0l, currentOutcomeId = 0l;
+                        long previousCategoryId = 0L, currentCategoryId = 0L, previousOutcomeId = 0L, currentOutcomeId = 0L;
                         CourseLearningOutcomes courseLearningOutcomes = new CourseLearningOutcomes();
                         List<LearningOutcomeCategory> learningOutcomeCategoryList = new ArrayList<LearningOutcomeCategory>();
                         LearningOutcomeCategory learningOutcomeCategoryObject = null;
@@ -2058,7 +2012,7 @@ public class AssignmentCopyDAO implements IAssignmentCopyDAO{
                     p.setExchange_key(rst.getString("exchane_key"));
                     p.setName(rst.getString("policy_name"));
                     p.setValue(rst.getString("value"));
-                    p.setContentDrivenPolicy("Y".equals(rst.getString("is_content_policy")) ? true : false);
+                    p.setContentDrivenPolicy("Y".equals(rst.getString("is_content_policy")));
                     policyInstanceSet.getPolicyList().add(p);
 
                 }
@@ -2090,7 +2044,7 @@ public class AssignmentCopyDAO implements IAssignmentCopyDAO{
     }
 
     public long createPolicyInstanceSet(PolicyInstanceSet policyInstanceSet) throws Exception {
-        long policyInstanceSetId = 0l;
+        long policyInstanceSetId = 0L;
 
         try {
             policyInstanceSetId = generateIDUsingSequence("gbs_sequence");

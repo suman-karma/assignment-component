@@ -52,8 +52,8 @@ public abstract class DateUtil {
 		DATE_FORMAT_MM_DD_YY_HH_MM_A("MM/dd/yy hh:mm a"), 
 		DATE_FORMAT_MMM_DD_YYYY("MMM dd, yyyy");
 		
-		private String format;
-		private DATE_FORMAT(String format){
+		private final String format;
+		DATE_FORMAT(String format){
 			this.format = format;
 		}
 		public String getFormat() {
@@ -61,14 +61,14 @@ public abstract class DateUtil {
 		}
 	}
 
-    public static enum TIME_UNIT {
+    public enum TIME_UNIT {
     	DAY("days"), HOUR("hours"), MINUTE("minutes"), SECOND("seconds");
 
 		TIME_UNIT(String str) {
 		    this.str = str;
 		}
 
-		private String str;
+		private final String str;
 
 		public String getKey() {
 		    return str;

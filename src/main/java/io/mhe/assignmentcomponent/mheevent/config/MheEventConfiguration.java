@@ -12,7 +12,7 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
 @Configuration
 public class MheEventConfiguration {
-private Logger logger = LoggerFactory.getLogger(MheEventConfiguration.class);
+private final Logger logger = LoggerFactory.getLogger(MheEventConfiguration.class);
 
   @Bean(name = "mheEventExecutor") 
   public TaskExecutor getThreadPoolTaskExecutor() { 

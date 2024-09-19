@@ -146,7 +146,7 @@ public String getConsumerJson(ContentTO contentTO, String transactionType) {
 		int compressAbove = Integer.parseInt(environment.getProperty(AmazonSQSConstants.CARDIO_COMPRESS_ABOVE_LIMIT));
 		String accessKey = environment.getProperty(AmazonSQSConstants.CARDIO_ACCESS_KEY);
 		String secretKey = environment.getProperty(AmazonSQSConstants.CARDIO_SECRET_KEY);
-		logger.debug("SQSENDPOINT : {}  :: SQSREGION : {} :: COMPRESS Above : {}", new Object[]{sqsEndPoint, sqsRegion, compressAbove});
+		logger.debug("SQSENDPOINT : {}  :: SQSREGION : {} :: COMPRESS Above : {}", sqsEndPoint, sqsRegion, compressAbove);
 		if(StringUtils.isNotBlank(sqsEndPoint) && StringUtils.isNotBlank(sqsRegion) && compressAbove > 0) {
 			Payload payload = new Payload();
 			payload.setContentTO(contentTO);
@@ -178,7 +178,7 @@ public boolean writeToSQSQueue(long activityId, long sectionId, String userId, i
         contentTO.setSectionId(sectionId);
         contentTO.setActivityId(activityId);
         contentTO.setUserId(userId);
-        logger.debug("Calling SQS from  {}   with contentTO:  {}  for transactionType: {}", new Object[]{source, contentTO, transactionType});
+        logger.debug("Calling SQS from  {}   with contentTO:  {}  for transactionType: {}", source, contentTO, transactionType);
         return writePayLoad(contentTO, String.valueOf(attemptNo), transactionType, currentDate);
     }
 
@@ -196,7 +196,7 @@ public boolean writeToSQSQueue(long assignmentId, long sectionId, long studentId
         contentTO.setSectionId(sectionId);
         contentTO.setAssignmentId(assignmentId);
         contentTO.setUserId(String.valueOf(studentId));
-        logger.debug("Calling SQS from {} with contentTO: {} for transactionType: {}", new Object[]{source, contentTO, transactionType});
+        logger.debug("Calling SQS from {} with contentTO: {} for transactionType: {}", source, contentTO, transactionType);
         return writePayLoad(contentTO, attemptNoStr, transactionType, currentDate);
     }
 
@@ -210,7 +210,7 @@ public boolean writeToSQSQueue(long secAssignLineItemActivityId, int attemptNo, 
         String attemptNoStr = attemptNo > 0 ? String.valueOf(attemptNo) : "1"; //Default value for attemptNo is 1
         ContentTO contentTO = new ContentTO();
         contentTO.setSectionLineItemActivityId(secAssignLineItemActivityId);
-        logger.debug("Calling SQS from  {}   with contentTO:  {}  for transactionType: {}", new Object[]{source, contentTO, transactionType});
+        logger.debug("Calling SQS from  {}   with contentTO:  {}  for transactionType: {}", source, contentTO, transactionType);
         return writePayLoad(contentTO, attemptNoStr, transactionType, currentDate);
     }
 }

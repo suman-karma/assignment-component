@@ -18,7 +18,7 @@ public interface IAmazonSQSMheEventHelper {
  * @param action
  * @throws Exception 
  */
-public boolean writeToSQS(MheEventTO eventTO);
+boolean writeToSQS(MheEventTO eventTO);
 
 /**
  * This method is called to send  MHE Event message to SQS
@@ -27,5 +27,5 @@ public boolean writeToSQS(MheEventTO eventTO);
  * @return success or failure
  * @throws Exception 
  */
-public boolean sendMessage(AmazonSQSMheEventTO amazonSqsMheEventTo) throws Exception;
+boolean sendMessage(AmazonSQSMheEventTO amazonSqsMheEventTo) throws Exception;
 }

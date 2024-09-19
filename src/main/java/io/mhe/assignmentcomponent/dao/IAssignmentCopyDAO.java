@@ -11,13 +11,13 @@ import java.util.Map;
 public interface IAssignmentCopyDAO {
 
 
-    public String getAssignmentName(long id);
+    String getAssignmentName(long id);
     boolean copyHMPublicAssignments(CopyAssignmentTO[] srcAssignments,
                                     long srcSectionId, long dstSectionId, long[] oldCategoryIds,
                                     long[] newCategoryIds, long newCourseId, long originalCourseId) throws Exception;
     void copySectionAssignmentXref(Map<Long, Long> sectionIdsMap, Map<Long, Long> assignmentsMap);
 
-    public boolean deleteMultipleAssignments(List<Long> assignmentIds);
+    boolean deleteMultipleAssignments(List<Long> assignmentIds);
 
 
     Activity[] getActivitiesForAssignment(long assignmentId);
@@ -45,13 +45,13 @@ public interface IAssignmentCopyDAO {
 
     void insertParentAssignmentStatusForAssignment(long assignmentId, long parentAssignmentId, String status);
 
-    public void copyModuleAssignmentMapping(Map<String, String> modulesMap,Map<String, String> assignmentsMap);
+    void copyModuleAssignmentMapping(Map<String, String> modulesMap, Map<String, String> assignmentsMap);
 
-    public void copyAssignmentLineItemsForMultipleAssignments(CopyAssignmentTO[] copyAssignments) throws Exception;
+    void copyAssignmentLineItemsForMultipleAssignments(CopyAssignmentTO[] copyAssignments) throws Exception;
 
     List<Marathon> getMarathons(Long sectionId);
 
-    public MarathonInfo getMarathonInfo(Long marathonId, Long sectionId);
+    MarathonInfo getMarathonInfo(Long marathonId, Long sectionId);
 
     long createNewMarathon(MarathonInfo marathonInfo);
 
@@ -59,7 +59,7 @@ public interface IAssignmentCopyDAO {
 
     void createRubricForAssignment(long assignmentId, CourseLearningOutcomes courseLearningOutcomes) throws Exception;
 
-    public void updateLearningOutcomePolicy(long assignmentId, long sectionId, String policyValue) ;
+    void updateLearningOutcomePolicy(long assignmentId, long sectionId, String policyValue) ;
 
     void copyGroupAssignmentPropertiesForCopyAssignment(CopyAssignmentTO[] ca);
 

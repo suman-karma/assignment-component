@@ -7,12 +7,12 @@ import java.util.Date;
 
 @JsonInclude(Include.NON_EMPTY)
 public class ContentTO {
-private long sectionId = 0l;
-private long activityId = 0l;
+private long sectionId = 0L;
+private long activityId = 0L;
 private String userId = "";
 private String nativeAlaId;
-private long assignmentId = 0l;
-private long sectionLineItemActivityId = 0l;
+private long assignmentId = 0L;
+private long sectionLineItemActivityId = 0L;
 private Date modifiedDate;
 private int attemptNo;
 private String eventType;
@@ -83,29 +83,28 @@ public ContentTO(long sectionId, long assignmentId) {
 
 @Override
 public String toString() {
-		StringBuilder builder = new StringBuilder();
-		builder.append("ContentTO [sectionId=");
-		builder.append(sectionId);
-		builder.append(", activityId=");
-		builder.append(activityId);
-		builder.append(", userId=");
-		builder.append(userId);
-		builder.append(", nativeAlaId=");
-		builder.append(nativeAlaId);
-		builder.append(", assignmentId=");
-		builder.append(assignmentId);
-		builder.append(", sectionLineItemActivityId=");
-		builder.append(sectionLineItemActivityId);
-		builder.append(", modifiedDate=");
-		builder.append(modifiedDate);
-		builder.append(", attemptNo=");
-		builder.append(attemptNo);
-		builder.append(", eventType=");
-		builder.append(eventType);
-		builder.append(", retryCount=");
-		builder.append(retryCount);
-		builder.append("]");
-		return builder.toString();
+    String builder = "ContentTO [sectionId=" +
+            sectionId +
+            ", activityId=" +
+            activityId +
+            ", userId=" +
+            userId +
+            ", nativeAlaId=" +
+            nativeAlaId +
+            ", assignmentId=" +
+            assignmentId +
+            ", sectionLineItemActivityId=" +
+            sectionLineItemActivityId +
+            ", modifiedDate=" +
+            modifiedDate +
+            ", attemptNo=" +
+            attemptNo +
+            ", eventType=" +
+            eventType +
+            ", retryCount=" +
+            retryCount +
+            "]";
+		return builder;
 }
 public int getAttemptNo() {
 		return attemptNo;

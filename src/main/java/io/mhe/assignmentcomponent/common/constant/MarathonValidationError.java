@@ -6,13 +6,13 @@ package io.mhe.assignmentcomponent.common.constant;
  */
 public class MarathonValidationError {
 
-	private Long						marathonID;
-	private Long						bucketID;
-	private String						bucketLabel;
-	private Long						assignmentID;
-	private MarathonValidationErrorEnum	errorType;
-	private String						errorCode;
-	private String						errorDescription;
+	private final Long						marathonID;
+	private final Long						bucketID;
+	private final String						bucketLabel;
+	private final Long						assignmentID;
+	private final MarathonValidationErrorEnum	errorType;
+	private final String						errorCode;
+	private final String						errorDescription;
 
 	public MarathonValidationError(Long marathonID, Long bucketID, String bucketLabel,
 			Long assignmentID, MarathonValidationErrorEnum errorType) {

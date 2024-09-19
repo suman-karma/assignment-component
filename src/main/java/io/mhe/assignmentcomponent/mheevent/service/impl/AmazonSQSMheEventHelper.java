@@ -21,12 +21,12 @@ import org.springframework.stereotype.Service;
 @Service
 public class AmazonSQSMheEventHelper implements IAmazonSQSMheEventHelper {
 
-    private static Logger logger = LoggerFactory.getLogger(AmazonSQSMheEventHelper.class);
+    private static final Logger logger = LoggerFactory.getLogger(AmazonSQSMheEventHelper.class);
 
-    private boolean initialized = false;
+    private final boolean initialized = false;
     //private int COMPRESSION_ABOVE = 0;
-    private AmazonSQS sqs = null;
-    private int delayInSeconds = 0;
+    private final AmazonSQS sqs = null;
+    private final int delayInSeconds = 0;
 
     private static Environment environment;
 
@@ -105,7 +105,7 @@ public class AmazonSQSMheEventHelper implements IAmazonSQSMheEventHelper {
                     SendMessageResult response = sqs.sendMessage(send_msg_request);
                     if (response != null && StringUtils.isNotBlank(response.getMessageId())) {
                         success = true;
-                        logger.debug("[AmazonSQSMheEventHelper] Message has been successfully sent to SQS: Time taken {} Response {}", new Object[]{System.currentTimeMillis() - startTime, response});
+                        logger.debug("[AmazonSQSMheEventHelper] Message has been successfully sent to SQS: Time taken {} Response {}", System.currentTimeMillis() - startTime, response);
                     }
                 } else {
                     logger.error("[AmazonSQSMheEventHelper] Message has been not sent to SQS:SqsEndPoint not defined");

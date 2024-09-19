@@ -53,10 +53,5 @@ package io.mhe.assignmentcomponent.service.generic.vo;
 
 import java.io.Serializable;
 
-/**
- * @author lionel
- * Date: Aug 18, 2003
- * Time: 8:30:15 AM
- */
 public interface Model extends Serializable {
 }

@@ -16,10 +16,9 @@ public void setEventTO(MheEventTO eventTO) {
 
 @Override
 public String toString() {
-		StringBuilder builder = new StringBuilder();
-		builder.append("MheEventPayload [mheEventContent=");
-		builder.append(eventTO);
-		builder.append("]");
-		return builder.toString();
+    String builder = "MheEventPayload [mheEventContent=" +
+            eventTO +
+            "]";
+		return builder;
 }
 }

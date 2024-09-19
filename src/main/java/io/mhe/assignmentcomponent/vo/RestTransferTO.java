@@ -2,13 +2,8 @@ package io.mhe.assignmentcomponent.vo;
 
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
-
 import java.util.HashMap;
 import java.util.Map;
-
-/**
- * Date: Dec 12, 2012 This class will be used as a transfer object for Rest base Http request and response.
- */
 
 public class RestTransferTO<T> {
 
@@ -202,11 +197,8 @@ public class RestTransferTO<T> {
 		} else if (!headerParams.equals(other.headerParams)) {
 			return false;
 		}
-		if (httpMethod != other.httpMethod) {
-			return false;
-		}
-		return true;
-	}
+        return httpMethod == other.httpMethod;
+    }
 
 	public void setPopulateHeaderParams(boolean populateHeaderParams) {
 
@@ -219,29 +211,28 @@ public class RestTransferTO<T> {
 	 */
 	@Override
 	public String toString() {
-		StringBuilder builder = new StringBuilder();
-		builder.append("RestTransferTO [baseUrl=");
-		builder.append(baseUrl);
-		builder.append(", contentType=");
-		builder.append(contentType);
-		builder.append(", headerParams=");
-		builder.append(headerParams);
-		builder.append(", httpMethod=");
-		builder.append(httpMethod);
-		builder.append(", httpSecurityType=");
-		builder.append(httpSecurityType);
-		builder.append(", parameters=");
-		builder.append(parameters);
-		builder.append(", populateHeaderParams=");
-		builder.append(populateHeaderParams);
-		builder.append(", requestType=");
-		builder.append(requestType);
-		builder.append(", responseType=");
-		builder.append(responseType);
-		builder.append(", restRelativeURL=");
-		builder.append(restRelativeURL);
-		builder.append("]");
-		return builder.toString();
+        String builder = "RestTransferTO [baseUrl=" +
+                baseUrl +
+                ", contentType=" +
+                contentType +
+                ", headerParams=" +
+                headerParams +
+                ", httpMethod=" +
+                httpMethod +
+                ", httpSecurityType=" +
+                httpSecurityType +
+                ", parameters=" +
+                parameters +
+                ", populateHeaderParams=" +
+                populateHeaderParams +
+                ", requestType=" +
+                requestType +
+                ", responseType=" +
+                responseType +
+                ", restRelativeURL=" +
+                restRelativeURL +
+                "]";
+		return builder;
 	}
 
 }

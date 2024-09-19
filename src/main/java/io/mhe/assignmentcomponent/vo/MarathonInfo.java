@@ -1,7 +1,5 @@
 package io.mhe.assignmentcomponent.vo;
 
-
-
 import io.mhe.assignmentcomponent.common.IMarathonVisitor;
 import io.mhe.assignmentcomponent.common.constant.Visitable;
 

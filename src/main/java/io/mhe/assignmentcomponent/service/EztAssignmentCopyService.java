@@ -8,10 +8,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
+import java.util.*;
 
 @Service("ASSESMENT")
 public class EztAssignmentCopyService extends AssignmentCopyService{
@@ -31,7 +28,6 @@ public class EztAssignmentCopyService extends AssignmentCopyService{
                                             long newCourseId,
                                             long newSectionId,
                                             HashMap modulesMap,
-                                            Map assignMap,
                                             String coursePrimaryInstructorId,
                                             Map<Long, Long> oldAndNewCategories,
                                             Map<Long, Long> oldAndNewOutcomes,
@@ -45,7 +41,7 @@ public class EztAssignmentCopyService extends AssignmentCopyService{
                     CopyAssignmentTO[] { srcAssignment }); // ezt call to do
             logger.error("####################### in copyAssignmentsToNewSection after set 2  srcAssignment {}",srcAssignment);
             if ("failed".equals(srcAssignment.getCopyEZTStatus())) {
-                assignmentCopyDAO.deleteMultipleAssignments(Arrays.asList(srcAssignment.getNewAssignmentId()));
+                assignmentCopyDAO.deleteMultipleAssignments(List.of(srcAssignment.getNewAssignmentId()));
                 throw new Exception("EZTO copy for the assignment failed");
             }
             if (srcAssignment.getNewNativeAlaId() != null) {
@@ -76,12 +72,12 @@ public class EztAssignmentCopyService extends AssignmentCopyService{
             // ezt
             iIntegrationRestService.pullRegistrationMultiple( new AssignmentTO(srcAssignment.getAssignmentId(),srcAssignment.getNativeAlaId()));
 
-            doRelatedUpdatesPostCopy( srcAssignment,  oldSectionID, newSectionId, modulesMap, assignMap, coursePrimaryInstructorId,
+            doRelatedUpdatesPostCopy( srcAssignment,  oldSectionID, newSectionId, modulesMap, coursePrimaryInstructorId,
                     oldAndNewCategories, oldAndNewOutcomes, isMarathon);
 
             logger.error("####################### in copyAssignmentsToNewSection completed");
         } catch (Exception e) {
-            assignmentCopyDAO.deleteMultipleAssignments(Arrays.asList(srcAssignment.getNewAssignmentId()));
+            assignmentCopyDAO.deleteMultipleAssignments(List.of(srcAssignment.getNewAssignmentId()));
             throw e;
         }
     }
